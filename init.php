@@ -14,4 +14,20 @@ if( !defined( 'ABSPATH' ) )
 
 $path = trailingslashit( dirname( __FILE__ ) );
 
+// Ensure Gravity Forms is installed and good to go
+if( class_exists( 'GFForms' ) ) {
+
+	GFForms::include_feed_addon_framework();
+
+	// Require Braintree Payments core
+	require_once $path . 'lib/Braintree.php';
+
+	// Require plugin entry point
+	require_once $path . 'lib/class.plugify-gform-braintree.php';
+
+	// Fire off entry point
+	new Plugify_GForm_Braintree();
+
+}
+
 ?>
