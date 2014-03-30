@@ -32,7 +32,7 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 	public function plugin_page () {
 
-		echo '<p>:D</p>';
+		echo '<p>Display Braintree feeds here</p>';
 
 	}
 
