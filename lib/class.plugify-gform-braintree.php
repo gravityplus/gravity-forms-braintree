@@ -43,7 +43,57 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 	public function plugin_settings_fields () {
 
+		return array(
 
+      array(
+        'title' => 'Account Settings',
+        'fields' => array(
+          array(
+            'name' => 'merchant-id',
+            'tooltip' => 'Your Braintree Merchant ID',
+            'label' => 'Merchant ID',
+            'type' => 'text',
+            'class' => 'small'
+          ),
+					array(
+						'name' => 'public-key',
+						'tooltip' => 'Your Braintree Account Public Key',
+						'label' => 'Public Key',
+						'type' => 'text',
+						'class' => 'small'
+					),
+					array(
+						'name' => 'private-key',
+						'tooltip' => 'Your Braintree Account Private Key',
+						'label' => 'Private Key',
+						'type' => 'text',
+						'class' => 'small'
+					)
+        )
+      ),
+			array(
+				'title' => 'Environment Settings',
+				'fields' => array(
+					array(
+						'name' => 'environment',
+						'tooltip' => 'Do you want to process test payments or real payments?',
+						'label' => 'API Endpoint',
+						'type' => 'radio',
+						'choices' => array(
+							array(
+								'label' => 'Sandbox',
+								'name' => 'sandbox'
+							),
+							array(
+								'label' => 'Production',
+								'name' => 'production'
+							)
+						)
+					)
+				)
+			)
+
+    );
 
 	}
 
