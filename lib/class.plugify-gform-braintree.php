@@ -32,13 +32,24 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 	public function plugin_page () {
 
-		echo '<p>Display Braintree feeds here</p>';
+		$table = $this->get_feed_table(null);
+
+		$table->prepare_items();
+		$table->display();
 
 	}
 
-	public function form_settings_fields () {
+	protected function feed_list_columns () {
 
+		return array(
+			'form' => __( 'Form', 'gravity-forms-braintree' ),
+			'txntype' => __( 'Transaction Type', 'gravity-forms-braintree' )
+		);
 
+	}
+
+	public function feed_list_no_item_message () {
+		return sprintf(__("<p style=\"padding: 10px 5px 5px;\">You don't have any feeds configured. Let's go %screate one%s!</p>", "gravityforms"), "<a href='" . add_query_arg(array("fid" => 0)) . "'>", "</a>");
 	}
 
 	public function plugin_settings_fields () {
