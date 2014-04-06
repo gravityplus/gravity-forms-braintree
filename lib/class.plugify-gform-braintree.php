@@ -13,31 +13,94 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 	protected $_title = 'Braintree Payments';
 	protected $_short_title = 'Braintree';
 
-	public function _construct () {
-
-		Braintree_Configuration::environment( 'sandbox' );
-		Braintree_Configuration::merchantId( 'p6yj396vmycsdydq' );
-		Braintree_Configuration:publicKey( 't3245jnyhtcsphsw' );
-		Braintree_Configuration::privateKey( '609b4e2b41a61f087c9b0758e1e70a86' );
-
-		parent::_construct();
-
-	}
-
-	public function init () {
-
-		parent::init();
-
-	}
-
 	public function plugin_page () {
 
-		$table = $this->get_feed_table(null);
+		if( isset( $_GET['fid'] ) ) {
+			$feed = $this->get_feed( $_GET['fid'] );
+			$form = GFAPI::get_form( $feed['form_id'] );
 
-		$table->prepare_items();
-		$table->display();
+			$this->feed_edit_page( $form, $feed['id'] );
+
+			echo '<pre>' . print_r( $feed, true ) . '</pre>';
+			echo '<pre>' . print_r( $form, true ) . '</pre>';
+
+		}
+		else
+			$this->feed_list_page();
 
 	}
+
+	public function feed_settings_fields() {
+
+		global $wpdb;
+
+		if( $forms = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}rg_form WHERE `is_active` = 1", OBJECT ) ) {
+
+			$choices = array();
+
+			$choices[] = array(
+				'label' => 'Select a form',
+				'value' => ''
+			);
+
+			foreach( $forms as $form )
+			$choices[] = array(
+				'label' => $form->title,
+				'value' => $form->id
+			);
+
+		}
+
+    return array(
+
+      array(
+        'fields' => array(
+          array(
+            'label' => 'Gravity Form',
+            'type' => 'select',
+            'name' => 'form_id',
+            'class' => 'small',
+						'choices' => $choices
+          ),
+          array(
+            'name' => 'gf_braintree_mapped_fields',
+            'label' => 'Map Fields',
+            'type' => 'field_map',
+            'field_map' => array(
+							array(
+								'name' => 'first_name',
+								'label' => 'First Name',
+								'required' => 1
+							),
+							array(
+								'name' => 'last_name',
+								'label' => 'Last Name',
+								'required' => 1
+							),
+							array(
+								'name' => 'company',
+								'label' => 'Company (optional)',
+								'required' => 0
+							),
+							array(
+								'name' => 'email',
+								'label' => 'Email',
+								'required' => 1
+							)
+							,
+							array(
+								'name' => 'phone',
+								'label' => 'Phone (optional)',
+								'required' => 0
+							)
+          	)
+          )
+        )
+      )
+
+    );
+
+  }
 
 	protected function feed_list_columns () {
 
@@ -49,7 +112,7 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 	}
 
 	public function feed_list_no_item_message () {
-		return sprintf(__("<p style=\"padding: 10px 5px 5px;\">You don't have any feeds configured. Let's go %screate one%s!</p>", "gravityforms"), "<a href='" . add_query_arg(array("fid" => 0)) . "'>", "</a>");
+		return sprintf(__("<p style=\"padding: 10px 5px 5px;\">You don't have any Braintree feeds configured. Let's go %screate one%s!</p>", "gravityforms"), "<a href='" . add_query_arg(array("fid" => 0)) . "'>", "</a>");
 	}
 
 	public function plugin_settings_fields () {
@@ -105,6 +168,25 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 			)
 
     );
+
+	}
+
+	public function process_feed( $feed, $entry, $form ) {
+
+		Braintree_Configuration::environment( 'sandbox' );
+		Braintree_Configuration::merchantId( 'p6yj396vmycsdydq' );
+		Braintree_Configuration::publicKey( 't3245jnyhtcsphsw' );
+		Braintree_Configuration::privateKey( '609b4e2b41a61f087c9b0758e1e70a86' );
+
+		$result = Braintree_Customer::create(array(
+			'firstName' => 'Mike',
+			'lastName' => 'Jones',
+			'company' => 'Jones Co.',
+			'email' => 'mike.jones@example.com',
+			'phone' => '281.330.8004',
+			'fax' => '419.555.1235',
+			'website' => 'http://example.com'
+		));
 
 	}
 
