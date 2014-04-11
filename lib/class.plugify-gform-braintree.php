@@ -39,10 +39,13 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 		global $wpdb;
 
+		if( !$form_id )
+		$form_id = $_POST['_gaddon_setting_form_id'];
+
 		if( $feed_id = parent::insert_feed( $form_id, $is_active, $meta ) ) {
 
-			$wpdb->update( "{$wpdb->prefix}gf_addon_feed", array( 'form_id' => $_POST['form_id'] ), array( 'id' => $feed_id ) );
-			return $feed_id;
+			$wpdb->update( "{$wpdb->prefix}gf_addon_feed", array( 'form_id' => $form_id ), array( 'id' => $feed_id ) );
+			return true;
 
 		}
 
@@ -54,10 +57,14 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 		global $wpdb;
 
-		if( $result = parent::save_feed_settings( $feed_id, $form_id, $settings ) )
-			return $wpdb->update( "{$wpdb->prefix}gf_addon_feed", array( 'form_id' => $settings['form_id'] ), array( 'id' => $feed_id ) );
-		else
-			return $result;
+		$result = false;
+
+		if( $result = parent::save_feed_settings( $feed_id, $form_id, $settings ) ) {
+			$wpdb->update( "{$wpdb->prefix}gf_addon_feed", array( 'form_id' => $settings['form_id'] ), array( 'id' => $feed_id ) );
+			$result = true;
+		}
+
+		return $result;
 
 	}
 
@@ -66,7 +73,7 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 		if( isset( $_GET['fid'] ) && !isset( $_GET['id'] ) ) {
 
 			$feed = $this->get_feed( $_GET['fid'] );
-			wp_redirect( add_query_arg( array( 'id' => $feed['form_id'] ) ) );
+			wp_redirect( add_query_arg( array( 'id' => $feed['form_id'] ? $feed['form_id'] : '0' ) ) );
 
 		}
 
@@ -278,7 +285,13 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 	}
 
 	public function feed_list_no_item_message () {
-		return sprintf(__("<p style=\"padding: 10px 5px 5px;\">You don't have any Braintree feeds configured. Let's go %screate one%s!</p>", "gravityforms"), "<a href='" . add_query_arg( array( 'fid' => 0, 'id' => 0 ) ) . "'>", "</a>");
+
+		$settings = $this->get_plugin_settings();
+
+		if( empty( $settings ) )
+			return sprintf(__("<p style=\"padding: 10px 5px 5px;\">You have not yet configured your Braintree settings. Let's go %sdo that now%s!</p>", "gravityforms"), "<a href='" . admin_url( 'admin.php?page=gf_settings&subview=Braintree' ) . "'>", "</a>");
+		else
+			return sprintf(__("<p style=\"padding: 10px 5px 5px;\">You don't have any Braintree feeds configured. Let's go %screate one%s!</p>", "gravityforms"), "<a href='" . add_query_arg( array( 'fid' => 0, 'id' => 0 ) ) . "'>", "</a>");
 	}
 
 	public function process_feed( $feed, $entry, $form ) {
@@ -316,7 +329,7 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 			// Configure automatic settlement
 			if( $settings['settlement'] == 'Yes' )
 			$args['options']['submitForSettlement'] = 'true';
-			
+
 			// Configure Braintree environment
 			Braintree_Configuration::environment( strtolower( $settings['environment'] ) );
 			Braintree_Configuration::merchantId( $settings['merchant-id']);
