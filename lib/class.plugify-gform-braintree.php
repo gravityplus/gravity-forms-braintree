@@ -238,6 +238,22 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 								'name' => 'production'
 							)
 						)
+					),
+					array(
+						'name' => 'settlement',
+						'tooltip' => 'Should authorized payments be automatically submitted for settlement?',
+						'label' => 'Settlement',
+						'type' => 'radio',
+						'choices' => array(
+							array(
+								'label' => 'Yes',
+								'name' => 'yes'
+							),
+							array(
+								'label' => 'No',
+								'name' => 'no'
+							)
+						)
 					)
 				)
 			)
