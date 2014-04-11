@@ -278,13 +278,10 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 	public function process_feed( $feed, $entry, $form ) {
 
+		// Proceed only if settings exist
 		if( $settings = $this->get_plugin_settings() ) {
 
-			Braintree_Configuration::environment( strtolower($settings['environment']) );
-			Braintree_Configuration::merchantId( $settings['merchant-id']);
-			Braintree_Configuration::publicKey( $settings['public-key'] );
-			Braintree_Configuration::privateKey( $settings['private-key'] );
-
+			// Build Braintree HTTP request parameters
 			$args = array(
 
 				'amount' => trim( $entry[ $feed['meta']['gf_braintree_mapped_fields_amount'] ], "$ \t\n\r\0\x0B" ),
@@ -303,13 +300,35 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 			);
 
+			// Include phone if present
 			if( !empty( $feed['meta']['gf_braintree_mapped_fields_phone'] ) )
 			$args['customer']['phone'] = $entry[ $feed['meta']['gf_braintree_mapped_fields_phone'] ];
 
+			// Include company name if present
 			if( !empty( $feed['meta']['gf_braintree_mapped_fields_company'] ) )
 			$args['customer']['company'] = $entry[ $feed['meta']['gf_braintree_mapped_fields_company'] ];
 
+			// Configure Braintree environment
+			Braintree_Configuration::environment( strtolower( $settings['environment'] ) );
+			Braintree_Configuration::merchantId( $settings['merchant-id']);
+			Braintree_Configuration::publicKey( $settings['public-key'] );
+			Braintree_Configuration::privateKey( $settings['private-key'] );
+
+			// Send query to Braintree and parse result
 			$result = Braintree_Transaction::sale( $args );
+
+			// Update entry meta with Braintree response
+			if( $result->success ) {
+
+				gform_update_meta( $entry['id'], 'payment_status', $result->transaction->_attributes['status'] );
+				gform_update_meta( $entry['id'], 'transaction_id', $result->transaction->_attributes['id'] );
+				gform_update_meta( $entry['id'], 'payment_amount', '$' . $result->transaction->_attributes['amount'] );
+				gform_update_meta( $entry['id'], 'payment_method', 'Braintree (' . $result->transaction->_attributes['creditCard']['cardType'] . ')' );
+
+			}
+			else {
+				gform_update_meta( $entry['id'], 'payment_status', 'failed' );
+			}
 
 		}
 
