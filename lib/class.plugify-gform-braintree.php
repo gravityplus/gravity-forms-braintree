@@ -13,6 +13,13 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 	protected $_title = 'Braintree Payments';
 	protected $_short_title = 'Braintree';
 
+	public function __construct () {
+
+		parent::__construct();
+		add_action( 'admin_init', array( &$this, 'get_form_id' ) );
+
+	}
+
 	public function plugin_page () {
 
 		if( isset( $_GET['fid'] ) ) {
@@ -39,14 +46,29 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 		}
 
+		return false;
+
 	}
 
 	public function save_feed_settings ( $feed_id, $form_id, $settings ) {
 
 		global $wpdb;
 
-		if( parent::save_feed_settings( $feed_id, $form_id, $settings ) )
-		return $wpdb->update( "{$wpdb->prefix}gf_addon_feed", array( 'form_id' => $settings['form_id'] ), array( 'id' => $feed_id ) );
+		if( $result = parent::save_feed_settings( $feed_id, $form_id, $settings ) )
+			return $wpdb->update( "{$wpdb->prefix}gf_addon_feed", array( 'form_id' => $settings['form_id'] ), array( 'id' => $feed_id ) );
+		else
+			return $result;
+
+	}
+
+	public function get_form_id () {
+
+		if( isset( $_GET['fid'] ) && !isset( $_GET['id'] ) ) {
+
+			$feed = $this->get_feed( $_GET['fid'] );
+			wp_redirect( add_query_arg( array( 'id' => $feed['form_id'] ) ) );
+
+		}
 
 	}
 
@@ -56,18 +78,20 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 		if( $forms = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}rg_form WHERE `is_active` = 1", OBJECT ) ) {
 
-			$choices = array();
+			$form_choices = array();
 
-			$choices[] = array(
+			$form_choices[] = array(
 				'label' => 'Select a form',
 				'value' => ''
 			);
 
 			foreach( $forms as $form )
-			$choices[] = array(
+			$form_choices[] = array(
 				'label' => $form->title,
 				'value' => $form->id
 			);
+
+			$fields = array();
 
 		}
 
@@ -80,7 +104,7 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
             'type' => 'select',
             'name' => 'form_id',
             'class' => 'small',
-						'choices' => $choices
+						'choices' => $form_choices
           ),
 					array(
 						'label' => '',
@@ -97,7 +121,9 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 							array(
 								'name' => 'first_name',
 								'label' => 'First Name',
-								'required' => 1
+								'required' => 1,
+								'choices' => array( 'label' => 'OMG YAY', 'value' => 'derp' ),
+								'values' => array( 'label' => 'OMG YAY', 'value' => 'derp' )
 							),
 							array(
 								'name' => 'last_name',
@@ -113,12 +139,36 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 								'name' => 'email',
 								'label' => 'Email',
 								'required' => 1
-							)
-							,
+							),
 							array(
 								'name' => 'phone',
 								'label' => 'Phone (optional)',
 								'required' => 0
+							),
+							array(
+								'name' => 'cc_number',
+								'label' => 'Credit Card Number',
+								'required' => 1
+							),
+							array(
+								'name' => 'cc_expiry',
+								'label' => 'Credit Card Expiry',
+								'required' => 1
+							),
+							array(
+								'name' => 'cc_security_code',
+								'label' => 'Security Code (eg CVV)',
+								'required' => 1
+							),
+							array(
+								'name' => 'cc_cardholder',
+								'label' => 'Cardholder Name',
+								'required' => 1
+							),
+							array(
+								'name' => 'amount',
+								'label' => 'Payment Amount',
+								'required' => 1
 							)
           	)
           )
@@ -199,6 +249,7 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 	protected function feed_list_columns () {
 
 		return array(
+			'id' => __( 'ID', 'gravity-forms-braintree' ),
 			'form' => __( 'Form', 'gravity-forms-braintree' ),
 			'txntype' => __( 'Transaction Type', 'gravity-forms-braintree' )
 		);
@@ -206,7 +257,7 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 	}
 
 	public function feed_list_no_item_message () {
-		return sprintf(__("<p style=\"padding: 10px 5px 5px;\">You don't have any Braintree feeds configured. Let's go %screate one%s!</p>", "gravityforms"), "<a href='" . add_query_arg(array("fid" => 0)) . "'>", "</a>");
+		return sprintf(__("<p style=\"padding: 10px 5px 5px;\">You don't have any Braintree feeds configured. Let's go %screate one%s!</p>", "gravityforms"), "<a href='" . add_query_arg( array( 'fid' => 0, 'id' => 0 ) ) . "'>", "</a>");
 	}
 
 	public function process_feed( $feed, $entry, $form ) {
@@ -216,15 +267,31 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 		Braintree_Configuration::publicKey( 't3245jnyhtcsphsw' );
 		Braintree_Configuration::privateKey( '609b4e2b41a61f087c9b0758e1e70a86' );
 
-		$result = Braintree_Customer::create(array(
-			'firstName' => 'Mike',
-			'lastName' => 'Jones',
-			'company' => 'Jones Co.',
-			'email' => 'mike.jones@example.com',
-			'phone' => '281.330.8004',
-			'fax' => '419.555.1235',
-			'website' => 'http://example.com'
-		));
+		$args = array(
+
+			'amount' => trim( $entry[ $feed['meta']['gf_braintree_mapped_fields_amount'] ], "$ \t\n\r\0\x0B" ),
+			'orderId' => $entry['id'],
+			'creditCard' => array(
+				'number' => $_POST[ 'input_' . str_replace( '.', '_', $feed['meta']['gf_braintree_mapped_fields_cc_number'] ) ],
+				'expirationDate' => implode( '/', $_POST[ 'input_' . str_replace( '.', '_', $feed['meta']['gf_braintree_mapped_fields_cc_expiry'] ) ] ),
+				'cardholderName' => $_POST[ 'input_' . str_replace( '.', '_', $feed['meta']['gf_braintree_mapped_fields_cc_cardholder'] ) ],
+				'cvv' => $_POST[ 'input_' . str_replace( '.', '_', $feed['meta']['gf_braintree_mapped_fields_cc_security_code'] ) ]
+			),
+			'customer' => array(
+				'firstName' => $entry[ $feed['meta']['gf_braintree_mapped_fields_first_name'] ],
+				'lastName' => $entry[ $feed['meta']['gf_braintree_mapped_fields_last_name'] ],
+				'email' => $entry[ $feed['meta']['gf_braintree_mapped_fields_email'] ]
+			)
+
+		);
+
+		if( !empty( $feed['meta']['gf_braintree_mapped_fields_phone'] ) )
+		$args['customer']['phone'] = $entry[ $feed['meta']['gf_braintree_mapped_fields_phone'] ];
+
+		if( !empty( $feed['meta']['gf_braintree_mapped_fields_company'] ) )
+		$args['customer']['company'] = $entry[ $feed['meta']['gf_braintree_mapped_fields_company'] ];
+
+		$result = Braintree_Transaction::sale( $args );
 
 	}
 
