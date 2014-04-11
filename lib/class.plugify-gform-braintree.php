@@ -15,8 +15,12 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 	public function __construct () {
 
+		// Build parent
 		parent::__construct();
+
+		// Register actions
 		add_action( 'admin_init', array( &$this, 'get_form_id' ) );
+		add_action( 'wp_ajax_map_feed_fields', array( &$this, 'ajax_plugin_page' ) );
 
 	}
 
@@ -45,13 +49,24 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 	}
 
-	public function feed_edit_page ( $form, $feed_id ) {
+	public function ajax_plugin_page () {
 
-		if( empty( $form ) ) {
-			echo '<style type="text/css">tr#gaddon-setting-row-gf_braintree_mapped_fields { display: none; }</style>';
-		}
+		ob_start();
 
-		parent::feed_edit_page( $form, $feed_id );
+		// For anyone else reading this, the below is not ideal. Could not figure out how to do this natively with GFFeedAddOn due
+		// to lack of documentation in Gravity Forms. We'll be updating this to something less hacky in the future!
+		$url = admin_url( 'admin.php?page=' . sprintf( '%s&id=%s&fid=%s', $this->_slug, $_REQUEST['id'], $_REQUEST['fid'] ) );
+		$response = wp_remote_post( $url, array( 'cookies' => $_COOKIE ) );
+
+		if( $response['response']['code'] == '200' )
+		echo $response['body'];
+
+		$html = ob_get_contents();
+		ob_end_clean();
+
+		wp_send_json_success( array(
+			'html' => $html
+		) );
 
 	}
 
@@ -96,6 +111,43 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 			wp_redirect( add_query_arg( array( 'id' => $feed['form_id'] ? $feed['form_id'] : '0' ) ) );
 
 		}
+
+	}
+
+	public function get_column_value_form( $item ) {
+
+		$form = GFAPI::get_form( $item['form_id'] );
+		return __( $form['title'], 'gravity-forms-braintree' );
+
+	}
+
+	public function get_column_value_txntype( $item ) {
+		return __( 'Single payment', 'gravity-forms-braintree' );
+	}
+
+	public function scripts() {
+
+    $scripts = array(
+      array(
+        'handle'  => 'gf_braintree_scripts',
+        'src'     => 'http://localhost/tree/wp-content/plugins/gravity-forms-braintree/assets/js/scripts.js',
+        'version' => $this->_version,
+        'deps'    => array( 'jquery' ),
+        'strings' => array(
+					'ajax_url' => admin_url( 'admin-ajax.php' ),
+					'feed_id' => $_GET['fid']
+				),
+				"enqueue" => array(
+	        array(
+	        	'query' => 'page=gravity-forms-braintree'
+	        )
+        )
+      ),
+    );
+
+	  $scripts = array_merge( parent::scripts(), $scripts );
+
+		return $scripts;
 
 	}
 
@@ -149,8 +201,6 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 								'name' => 'first_name',
 								'label' => 'First Name',
 								'required' => 1,
-								'choices' => array( 'label' => 'OMG YAY', 'value' => 'derp' ),
-								'values' => array( 'label' => 'OMG YAY', 'value' => 'derp' )
 							),
 							array(
 								'name' => 'last_name',
@@ -205,17 +255,6 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
     );
 
   }
-
-	public function get_column_value_form( $item ) {
-
-		$form = GFAPI::get_form( $item['form_id'] );
-		return __( $form['title'], 'gravity-forms-braintree' );
-
-	}
-
-	public function get_column_value_txntype( $item ) {
-		return __( 'Single payment', 'gravity-forms-braintree' );
-	}
 
 	public function plugin_settings_fields () {
 
