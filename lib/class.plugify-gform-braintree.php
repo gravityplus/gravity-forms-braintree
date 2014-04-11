@@ -16,17 +16,37 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 	public function plugin_page () {
 
 		if( isset( $_GET['fid'] ) ) {
+
 			$feed = $this->get_feed( $_GET['fid'] );
 			$form = GFAPI::get_form( $feed['form_id'] );
 
 			$this->feed_edit_page( $form, $feed['id'] );
 
-			echo '<pre>' . print_r( $feed, true ) . '</pre>';
-			echo '<pre>' . print_r( $form, true ) . '</pre>';
-
 		}
 		else
 			$this->feed_list_page();
+
+	}
+
+	public function insert_feed ( $form_id, $is_active, $meta ) {
+
+		global $wpdb;
+
+		if( $feed_id = parent::insert_feed( $form_id, $is_active, $meta ) ) {
+
+			$wpdb->update( "{$wpdb->prefix}gf_addon_feed", array( 'form_id' => $_POST['form_id'] ), array( 'id' => $feed_id ) );
+			return $feed_id;
+
+		}
+
+	}
+
+	public function save_feed_settings ( $feed_id, $form_id, $settings ) {
+
+		global $wpdb;
+
+		if( parent::save_feed_settings( $feed_id, $form_id, $settings ) )
+		return $wpdb->update( "{$wpdb->prefix}gf_addon_feed", array( 'form_id' => $settings['form_id'] ), array( 'id' => $feed_id ) );
 
 	}
 
@@ -62,6 +82,13 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
             'class' => 'small',
 						'choices' => $choices
           ),
+					array(
+						'label' => '',
+						'type' => 'hidden',
+						'name' => 'transaction_type',
+						'value' => 'Single Payment',
+						'class' => 'small'
+					),
           array(
             'name' => 'gf_braintree_mapped_fields',
             'label' => 'Map Fields',
@@ -102,17 +129,15 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
   }
 
-	protected function feed_list_columns () {
+	public function get_column_value_form( $item ) {
 
-		return array(
-			'form' => __( 'Form', 'gravity-forms-braintree' ),
-			'txntype' => __( 'Transaction Type', 'gravity-forms-braintree' )
-		);
+		$form = GFAPI::get_form( $item['form_id'] );
+		return __( $form['title'], 'gravity-forms-braintree' );
 
 	}
 
-	public function feed_list_no_item_message () {
-		return sprintf(__("<p style=\"padding: 10px 5px 5px;\">You don't have any Braintree feeds configured. Let's go %screate one%s!</p>", "gravityforms"), "<a href='" . add_query_arg(array("fid" => 0)) . "'>", "</a>");
+	public function get_column_value_txntype( $item ) {
+		return __( 'Single payment', 'gravity-forms-braintree' );
 	}
 
 	public function plugin_settings_fields () {
@@ -169,6 +194,19 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
     );
 
+	}
+
+	protected function feed_list_columns () {
+
+		return array(
+			'form' => __( 'Form', 'gravity-forms-braintree' ),
+			'txntype' => __( 'Transaction Type', 'gravity-forms-braintree' )
+		);
+
+	}
+
+	public function feed_list_no_item_message () {
+		return sprintf(__("<p style=\"padding: 10px 5px 5px;\">You don't have any Braintree feeds configured. Let's go %screate one%s!</p>", "gravityforms"), "<a href='" . add_query_arg(array("fid" => 0)) . "'>", "</a>");
 	}
 
 	public function process_feed( $feed, $entry, $form ) {
