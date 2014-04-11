@@ -45,6 +45,16 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 	}
 
+	public function feed_edit_page ( $form, $feed_id ) {
+
+		if( empty( $form ) ) {
+			echo '<style type="text/css">tr#gaddon-setting-row-gf_braintree_mapped_fields { display: none; }</style>';
+		}
+
+		parent::feed_edit_page( $form, $feed_id );
+
+	}
+
 	public function insert_feed ( $form_id, $is_active, $meta ) {
 
 		global $wpdb;
