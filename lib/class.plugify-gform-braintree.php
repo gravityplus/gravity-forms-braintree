@@ -221,6 +221,27 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
         )
       ),
 			array(
+				'title' => 'Payment Settings',
+				'fields' => array(
+					array(
+						'name' => 'settlement',
+						'tooltip' => 'Choosing \'Yes\' will tell Braintree to automatically submit your transactions for settlement upon receipt',
+						'label' => 'Automatic Settlement Submission',
+						'type' => 'radio',
+						'choices' => array(
+							array(
+								'label' => 'Yes',
+								'name' => 'yes'
+							),
+							array(
+								'label' => 'No',
+								'name' => 'no'
+							)
+						)
+					)
+				)
+			),
+			array(
 				'title' => 'Environment Settings',
 				'fields' => array(
 					array(
@@ -236,22 +257,6 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 							array(
 								'label' => 'Production',
 								'name' => 'production'
-							)
-						)
-					),
-					array(
-						'name' => 'settlement',
-						'tooltip' => 'Should authorized payments be automatically submitted for settlement?',
-						'label' => 'Settlement',
-						'type' => 'radio',
-						'choices' => array(
-							array(
-								'label' => 'Yes',
-								'name' => 'yes'
-							),
-							array(
-								'label' => 'No',
-								'name' => 'no'
 							)
 						)
 					)
@@ -308,6 +313,10 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 			if( !empty( $feed['meta']['gf_braintree_mapped_fields_company'] ) )
 			$args['customer']['company'] = $entry[ $feed['meta']['gf_braintree_mapped_fields_company'] ];
 
+			// Configure automatic settlement
+			if( $settings['settlement'] == 'Yes' )
+			$args['options']['submitForSettlement'] = 'true';
+			
 			// Configure Braintree environment
 			Braintree_Configuration::environment( strtolower( $settings['environment'] ) );
 			Braintree_Configuration::merchantId( $settings['merchant-id']);
