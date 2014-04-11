@@ -262,36 +262,40 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 	public function process_feed( $feed, $entry, $form ) {
 
-		Braintree_Configuration::environment( 'sandbox' );
-		Braintree_Configuration::merchantId( 'p6yj396vmycsdydq' );
-		Braintree_Configuration::publicKey( 't3245jnyhtcsphsw' );
-		Braintree_Configuration::privateKey( '609b4e2b41a61f087c9b0758e1e70a86' );
+		if( $settings = $this->get_plugin_settings() ) {
 
-		$args = array(
+			Braintree_Configuration::environment( strtolower($settings['environment']) );
+			Braintree_Configuration::merchantId( $settings['merchant-id']);
+			Braintree_Configuration::publicKey( $settings['public-key'] );
+			Braintree_Configuration::privateKey( $settings['private-key'] );
 
-			'amount' => trim( $entry[ $feed['meta']['gf_braintree_mapped_fields_amount'] ], "$ \t\n\r\0\x0B" ),
-			'orderId' => $entry['id'],
-			'creditCard' => array(
-				'number' => $_POST[ 'input_' . str_replace( '.', '_', $feed['meta']['gf_braintree_mapped_fields_cc_number'] ) ],
-				'expirationDate' => implode( '/', $_POST[ 'input_' . str_replace( '.', '_', $feed['meta']['gf_braintree_mapped_fields_cc_expiry'] ) ] ),
-				'cardholderName' => $_POST[ 'input_' . str_replace( '.', '_', $feed['meta']['gf_braintree_mapped_fields_cc_cardholder'] ) ],
-				'cvv' => $_POST[ 'input_' . str_replace( '.', '_', $feed['meta']['gf_braintree_mapped_fields_cc_security_code'] ) ]
-			),
-			'customer' => array(
-				'firstName' => $entry[ $feed['meta']['gf_braintree_mapped_fields_first_name'] ],
-				'lastName' => $entry[ $feed['meta']['gf_braintree_mapped_fields_last_name'] ],
-				'email' => $entry[ $feed['meta']['gf_braintree_mapped_fields_email'] ]
-			)
+			$args = array(
 
-		);
+				'amount' => trim( $entry[ $feed['meta']['gf_braintree_mapped_fields_amount'] ], "$ \t\n\r\0\x0B" ),
+				'orderId' => $entry['id'],
+				'creditCard' => array(
+					'number' => $_POST[ 'input_' . str_replace( '.', '_', $feed['meta']['gf_braintree_mapped_fields_cc_number'] ) ],
+					'expirationDate' => implode( '/', $_POST[ 'input_' . str_replace( '.', '_', $feed['meta']['gf_braintree_mapped_fields_cc_expiry'] ) ] ),
+					'cardholderName' => $_POST[ 'input_' . str_replace( '.', '_', $feed['meta']['gf_braintree_mapped_fields_cc_cardholder'] ) ],
+					'cvv' => $_POST[ 'input_' . str_replace( '.', '_', $feed['meta']['gf_braintree_mapped_fields_cc_security_code'] ) ]
+				),
+				'customer' => array(
+					'firstName' => $entry[ $feed['meta']['gf_braintree_mapped_fields_first_name'] ],
+					'lastName' => $entry[ $feed['meta']['gf_braintree_mapped_fields_last_name'] ],
+					'email' => $entry[ $feed['meta']['gf_braintree_mapped_fields_email'] ]
+				)
 
-		if( !empty( $feed['meta']['gf_braintree_mapped_fields_phone'] ) )
-		$args['customer']['phone'] = $entry[ $feed['meta']['gf_braintree_mapped_fields_phone'] ];
+			);
 
-		if( !empty( $feed['meta']['gf_braintree_mapped_fields_company'] ) )
-		$args['customer']['company'] = $entry[ $feed['meta']['gf_braintree_mapped_fields_company'] ];
+			if( !empty( $feed['meta']['gf_braintree_mapped_fields_phone'] ) )
+			$args['customer']['phone'] = $entry[ $feed['meta']['gf_braintree_mapped_fields_phone'] ];
 
-		$result = Braintree_Transaction::sale( $args );
+			if( !empty( $feed['meta']['gf_braintree_mapped_fields_company'] ) )
+			$args['customer']['company'] = $entry[ $feed['meta']['gf_braintree_mapped_fields_company'] ];
+
+			$result = Braintree_Transaction::sale( $args );
+
+		}
 
 	}
 
