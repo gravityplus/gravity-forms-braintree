@@ -30,8 +30,18 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 			$this->feed_edit_page( $form, $feed['id'] );
 
 		}
-		else
+		else {
+
 			$this->feed_list_page();
+
+			?>
+			<style type="text/css">
+			table.feeds th#is_active { width: 50px; }
+			table.feeds th#id { width: 100px; }
+			</style>
+			<?php
+
+		}
 
 	}
 
@@ -277,7 +287,7 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 	protected function feed_list_columns () {
 
 		return array(
-			'id' => __( 'ID', 'gravity-forms-braintree' ),
+			'id' => __( 'Feed ID', 'gravity-forms-braintree' ),
 			'form' => __( 'Form', 'gravity-forms-braintree' ),
 			'txntype' => __( 'Transaction Type', 'gravity-forms-braintree' )
 		);
