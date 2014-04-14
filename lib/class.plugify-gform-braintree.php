@@ -22,6 +22,9 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 		add_action( 'admin_init', array( &$this, 'admin_init' ) );
 		add_action( 'wp_ajax_map_feed_fields', array( &$this, 'ajax_plugin_page' ) );
 
+		// Register filters
+		add_filter( 'gform_enable_credit_card_field', array( &$this, 'enable_credit_card' ), 10, 1 );
+
 	}
 
 	public function admin_init () {
@@ -86,6 +89,10 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 			'html' => $html
 		) );
 
+	}
+
+	public function enable_credit_card () {
+		return true;
 	}
 
 	public function insert_feed ( $form_id, $is_active, $meta ) {
