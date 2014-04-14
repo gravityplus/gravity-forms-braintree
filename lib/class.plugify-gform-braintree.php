@@ -46,6 +46,19 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 	}
 
+	public function plugin_page_title () {
+
+		if( $this->is_feed_list_page() )
+			return $this->_title . " <a class='add-new-h2' href='" . add_query_arg( array( 'fid' => 0 ) ) . "'>" . __( "Add New", "gravity-forms-braintree") . "</a>";
+		else
+			return parent::plugin_page_title();
+
+	}
+
+	public function feed_list_title () {
+		return null;
+	}
+
 	public function plugin_page () {
 
 		if( isset( $_GET['fid'] ) ) {
