@@ -76,7 +76,12 @@ jQuery( function($) {
           alert('There was an error deleting the feed. Please try again.');
         },
         success: function ( result ) {
+
           row.remove();
+
+          if( result.data.feed_count <= 0 )
+          $('tbody#the-list').append('<tr class="no-items"><td class="colspanchange" colspan="5">' + result.data.message + '</td></tr>')
+
         },
         complete: function () {
 
