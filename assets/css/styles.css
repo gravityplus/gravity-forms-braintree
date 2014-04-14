@@ -1,0 +1,16 @@
+/* !- gravity forms braintree styles */
+#gform-braintree-loader {
+  padding: 2px 0 0 2px;
+}
+
+table.feeds th#is_active {
+  width: 50px;
+}
+
+table.feeds th#id {
+  width: 100px;
+}
+
+body {
+  display: none;
+}

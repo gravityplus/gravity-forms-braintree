@@ -6,6 +6,7 @@ jQuery( function($) {
   $('select#form_id[name="_gaddon_setting_form_id"]').bind('change', function(e) {
 
     var new_id = $(this).children(':selected').val();
+    var ajax_loader = $('<img id="gform-braintree-loader" src="' + gf_braintree_scripts_strings.ajax_loader_url + '" alt="Loading.." style="padding: 0 0 0 5px;"/>');
 
     if( new_id == '' )
       return false;
@@ -22,6 +23,9 @@ jQuery( function($) {
         },
 				beforeSend: function() {
 
+          ajax_loader.insertAfter('tr#gaddon-setting-row-form_id td select#form_id');
+          $('#gform-settings-save,#gaddon-setting-row-gf_braintree_mapped_fields').fadeOut(150);
+
 				},
 				success: function( result ) {
 
@@ -32,10 +36,10 @@ jQuery( function($) {
           $('#gaddon-setting-row-gf_braintree_mapped_fields').append(html);
 
 				},
-				error: function () {
-
-				},
 				complete: function () {
+
+          ajax_loader.remove();
+          $('#gform-settings-save,#gaddon-setting-row-gf_braintree_mapped_fields').fadeIn(150);
 
 				}
 

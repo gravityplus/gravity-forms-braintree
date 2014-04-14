@@ -19,8 +19,26 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 		parent::__construct();
 
 		// Register actions
-		add_action( 'admin_init', array( &$this, 'get_form_id' ) );
+		add_action( 'admin_init', array( &$this, 'admin_init' ) );
 		add_action( 'wp_ajax_map_feed_fields', array( &$this, 'ajax_plugin_page' ) );
+
+	}
+
+	public function admin_init () {
+
+		// Update query vars and redirect if appropriate
+		if( isset( $_GET['fid'] ) && !isset( $_GET['id'] ) ) {
+
+			$feed = $this->get_feed( $_GET['fid'] );
+			wp_redirect( add_query_arg( array( 'id' => $feed['form_id'] ? $feed['form_id'] : '0' ) ) );
+			exit;
+
+		}
+
+		// Ensure necessary scripts are enqueued
+		wp_enqueue_script( 'jquery' );
+		wp_enqueue_script( 'jquery-ui-core', '', array( 'jquery' ) );
+		wp_enqueue_script( 'jquery-effects-core', '', array( 'jquery-ui-core', 'jquery' ) );
 
 	}
 
@@ -36,14 +54,14 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 		}
 		else {
 
-			$this->feed_list_page();
-
 			?>
 			<style type="text/css">
 			table.feeds th#is_active { width: 50px; }
 			table.feeds th#id { width: 100px; }
 			</style>
 			<?php
+
+			$this->feed_list_page();
 
 		}
 
@@ -53,7 +71,7 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 		ob_start();
 
-		// For anyone else reading this, the below is not ideal. Could not figure out how to do this natively with GFFeedAddOn due
+		// For anyone reading this, the below is not ideal. Could not figure out how to do this natively with GFFeedAddOn due
 		// to lack of documentation in Gravity Forms. We'll be updating this to something less hacky in the future!
 		$url = admin_url( 'admin.php?page=' . sprintf( '%s&id=%s&fid=%s', $this->_slug, $_REQUEST['id'], $_REQUEST['fid'] ) );
 		$response = wp_remote_post( $url, array( 'cookies' => $_COOKIE ) );
@@ -103,17 +121,6 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 	}
 
-	public function get_form_id () {
-
-		if( isset( $_GET['fid'] ) && !isset( $_GET['id'] ) ) {
-
-			$feed = $this->get_feed( $_GET['fid'] );
-			wp_redirect( add_query_arg( array( 'id' => $feed['form_id'] ? $feed['form_id'] : '0' ) ) );
-
-		}
-
-	}
-
 	public function get_column_value_form( $item ) {
 
 		$form = GFAPI::get_form( $item['form_id'] );
@@ -130,11 +137,12 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
     $scripts = array(
       array(
         'handle'  => 'gf_braintree_scripts',
-        'src'     => 'http://localhost/tree/wp-content/plugins/gravity-forms-braintree/assets/js/scripts.js',
+        'src'     => plugins_url( 'assets/js/scripts.js', trailingslashit( dirname( __FILE__ ) ) ),
         'version' => $this->_version,
         'deps'    => array( 'jquery' ),
         'strings' => array(
 					'ajax_url' => admin_url( 'admin-ajax.php' ),
+					'ajax_loader_url' => plugins_url( 'assets/images/ajax-loader.gif', trailingslashit( dirname( __FILE__ ) ) ),
 					'feed_id' => $_GET['fid']
 				),
 				"enqueue" => array(
