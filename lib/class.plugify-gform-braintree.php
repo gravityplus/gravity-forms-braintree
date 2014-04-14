@@ -30,7 +30,12 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 	public function admin_init () {
 
-		// Update query vars and redirect if appropriate
+		global $wpdb;
+
+		if( defined( 'DOING_AJAX' ) && DOING_AJAX )
+			return;
+
+		// If viewing a feed, ensure that 'id' (form id) is set correctly
 		if( isset( $_GET['fid'] ) && !isset( $_GET['id'] ) ) {
 
 			$feed = $this->get_feed( $_GET['fid'] );
@@ -38,6 +43,23 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 			exit;
 
 		}
+
+		// If a feed is being saved, save it and redirect
+		if( $_GET['fid'] == 0 && $_GET['id'] == 0 && !empty( $_POST ) ) {
+
+			if( $feed_id = $this->maybe_save_feed_settings( NULL, $_GET['id'] ) ) {
+
+				$feed = $this->get_feed( $wpdb->insert_id );
+				wp_redirect( add_query_arg( array( 'fid' => $feed['id'], 'id' => $feed['form_id'], 'created' => 'on' ) ) );
+
+				exit;
+
+			}
+
+		}
+
+		if( isset( $_GET['created'] ) && isset( $_GET['fid'] ) )
+			GFCommon::add_message( __( 'Feed created successfully. <a href="' . admin_url( 'admin.php?page=gravity-forms-braintree' ) . '">Back to list</a>', 'gravity-forms-braintree' ) );
 
 		// Ensure necessary scripts are enqueued
 		wp_enqueue_script( 'jquery' );
@@ -66,7 +88,7 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 			$feed = $this->get_feed( $_GET['fid'] );
 			$form = GFAPI::get_form( $feed['form_id'] );
 
-			if( $_REQUEST['fid'] == 0 && $_REQUEST['id'] == 0 )
+			if( $_REQUEST['fid'] == 0 && $_REQUEST['id'] == 0 && empty( $_POST ) )
 			echo '<style type="text/css">#gform-settings-save, #gaddon-setting-row-gf_braintree_mapped_fields { display: none; }</style>';
 
 			$this->feed_edit_page( $form, $feed['id'] );
@@ -146,7 +168,7 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 		if( $feed_id = parent::insert_feed( $form_id, $is_active, $meta ) ) {
 
 			$wpdb->update( "{$wpdb->prefix}gf_addon_feed", array( 'form_id' => $form_id ), array( 'id' => $feed_id ) );
-			return true;
+			return $feed_id;
 
 		}
 
@@ -162,7 +184,7 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 		if( $result = parent::save_feed_settings( $feed_id, $form_id, $settings ) ) {
 			$wpdb->update( "{$wpdb->prefix}gf_addon_feed", array( 'form_id' => $settings['form_id'] ), array( 'id' => $feed_id ) );
-			$result = true;
+			return $result;
 		}
 
 		return $result;
