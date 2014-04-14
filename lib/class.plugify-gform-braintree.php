@@ -169,14 +169,14 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 	}
 
-	public function get_column_value_form( $item ) {
+	public function get_column_value_form ( $item ) {
 
 		$form = GFAPI::get_form( $item['form_id'] );
 		return __( $form['title'], 'gravity-forms-braintree' );
 
 	}
 
-	public function get_column_value_txntype( $item ) {
+	public function get_column_value_txntype ( $item ) {
 		return __( 'Single payment', 'gravity-forms-braintree' );
 	}
 
