@@ -8,17 +8,11 @@ Stable tag: 0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Allows you to take credit card payments using Braintree Payments in your Gravity Forms
+Process credit card payments using Gravity Forms and Braintree Payments
 
 == Description ==
 
-= Have a feature request? =
-Sweet! Feature requsts on Github: https://github.com/lukerollans/gravity-forms-braintree/issues?labels=enhancement
-
-= Want to contribute? =
-Gravity Forms Braintree on Github: http://github.com/lukerollans/gravity-forms-braintree
-
-This plugin allows you to use your Braintree Payments account to accept credit card payments on your WordPress website with Gravity Forms installed.
+This plugin allows you to use your Braintree Payments account to accept credit card payments on your WordPress website with Gravity Forms
 
 There are just three simple steps to begin leveraging your Braintree Payments account:
 
