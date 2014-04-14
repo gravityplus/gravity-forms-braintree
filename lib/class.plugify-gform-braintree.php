@@ -54,7 +54,7 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 			$form = GFAPI::get_form( $feed['form_id'] );
 
 			if( $_REQUEST['fid'] == 0 && $_REQUEST['id'] == 0 )
-			echo '<style type="text/css">#gaddon-setting-row-gf_braintree_mapped_fields { display: none; }</style>';
+			echo '<style type="text/css">#gform-settings-save, #gaddon-setting-row-gf_braintree_mapped_fields { display: none; }</style>';
 
 			$this->feed_edit_page( $form, $feed['id'] );
 
