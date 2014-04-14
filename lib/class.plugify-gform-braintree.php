@@ -21,6 +21,7 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 		// Register actions
 		add_action( 'admin_init', array( &$this, 'admin_init' ) );
 		add_action( 'wp_ajax_map_feed_fields', array( &$this, 'ajax_plugin_page' ) );
+		add_action( 'wp_ajax_delete_feed', array( &$this, 'ajax_delete_feed' ) );
 
 		// Register filters
 		add_filter( 'gform_enable_credit_card_field', array( &$this, 'enable_credit_card' ), 10, 1 );
@@ -91,8 +92,20 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 	}
 
-	public function enable_credit_card () {
-		return true;
+	public function ajax_delete_feed () {
+
+		global $wpdb;
+
+		if( !isset( $_REQUEST['feed_id'] ) || !is_numeric( $_REQUEST['feed_id'] ) )
+			wp_send_json_error();
+
+		$count = $wpdb->delete( "{$wpdb->prefix}gf_addon_feed", array( 'id' => $_REQUEST['feed_id'] ) );
+
+		if( $count > 0 )
+			wp_send_json_success();
+		else
+			wp_send_json_error();
+
 	}
 
 	public function insert_feed ( $form_id, $is_active, $meta ) {
@@ -368,6 +381,15 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 			return sprintf(__("<p style=\"padding: 10px 5px 5px;\">You don't have any Braintree feeds configured. Let's go %screate one%s!</p>", "gravityforms"), "<a href='" . add_query_arg( array( 'fid' => 0, 'id' => 0 ) ) . "'>", "</a>");
 	}
 
+	public function get_action_links () {
+
+		return array(
+			'edit' => '<a title="' . __( 'Edit this feed', 'gravity-forms-braintree' ) . '" href="' . add_query_arg( array( 'fid' => "{id}" ) ) . '">' . __( 'Edit', 'gravity-forms-braintree' ) . '</a>',
+			'delete' => '<a title="' . __( 'Delete this feed', 'gravity-forms-braintree' ) . '" class="submitdelete" href="javascript:void();" data-feed-id="' . "{id}" . '">' . __( 'Delete', 'gravity-forms-braintree' ) . '</a>',
+		);
+
+	}
+
 	public function process_feed( $feed, $entry, $form ) {
 
 		// Proceed only if settings exist
@@ -428,6 +450,10 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 		}
 
+	}
+
+	public function enable_credit_card () {
+		return true;
 	}
 
 }

@@ -27,7 +27,7 @@ jQuery( function($) {
           $('#gform-settings-save,#gaddon-setting-row-gf_braintree_mapped_fields').fadeOut(150);
 
 				},
-				success: function( result ) {
+				success: function ( result ) {
 
           var html = $.parseHTML(result.data.html);
           html = $(html).find('#gaddon-setting-row-gf_braintree_mapped_fields').children();
@@ -46,5 +46,47 @@ jQuery( function($) {
 			});
 
   });
+
+  // Delete feeds when the delete anchor is clicked
+  $('.submitdelete').bind('click', function(e) {
+
+    // Halt
+    e.preventDefault();
+
+    var anchor = $(this);
+    var feed_id = anchor.attr('data-feed-id');
+    var row = anchor.closest('tr');
+
+    // Delete the feed if confirmed
+    if( confirm( 'WARNING: You are about to delete this feed. This cannot be undone. Are you sure?' ) ) {
+      $.ajax({
+
+        type: 'POST',
+        dataType: 'json',
+        url: gf_braintree_scripts_strings.ajax_url,
+        data: {
+          action: 'delete_feed',
+          feed_id: feed_id
+        },
+        beforeSend: function() {
+          row.fadeTo(250, 0.4);
+        },
+        error: function () {
+          row.fadeTo(0, 1);
+          alert('There was an error deleting the feed. Please try again.');
+        },
+        success: function ( result ) {
+          row.remove();
+        },
+        complete: function () {
+
+        }
+
+      })
+    }
+
+  });
+
+
 
 });
