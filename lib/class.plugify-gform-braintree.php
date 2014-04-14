@@ -117,8 +117,20 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 		$count = $wpdb->delete( "{$wpdb->prefix}gf_addon_feed", array( 'id' => $_REQUEST['feed_id'] ) );
 
-		if( $count > 0 )
-			wp_send_json_success();
+		$feeds = $this->get_feeds();
+
+		if( count( $feeds ) <= 0 )
+		$message = $this->feed_list_no_item_message();
+
+		if( $count > 0 ) {
+
+			wp_send_json_success( array(
+				'deleted_feeds' => $count,
+				'feed_count' => count( $feeds ),
+				'message' => $message
+			) );
+
+		}
 		else
 			wp_send_json_error();
 
