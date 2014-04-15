@@ -92,6 +92,34 @@ jQuery( function($) {
 
   });
 
+  // Toggle feed active state
+  $('.column-is_active .toggle_active').bind('click', function(e) {
 
+    var feed_id = $(this).attr('data-feed-id');
+    var is_active = $(this).attr('src').indexOf('active1.png') >= 0 ? 1 : 0;
+    var img = $(this);
+
+    $.ajax({
+
+      type: 'POST',
+      dataType: 'json',
+      url: gf_braintree_scripts_strings.ajax_url,
+      data: {
+        action: 'toggle_feed_active',
+        feed_id: feed_id,
+        is_active: is_active
+      },
+      success: function ( result ) {
+
+        var active = result.data.is_active;
+
+        img.attr('src', img.attr('src').replace('active0', 'active' + active));
+        img.attr('src', img.attr('src').replace('active1', 'active' + active));
+
+      }
+
+    })
+
+  });
 
 });

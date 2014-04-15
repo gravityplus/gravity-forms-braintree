@@ -24,6 +24,7 @@ if( class_exists( 'GFForms' ) ) {
 
 	// Require plugin entry point
 	require_once $path . 'lib/class.plugify-gform-braintree.php';
+	require_once $path . 'lib/class.plugify-gfaddonfeedstable.php';
 
 	// Fire off entry point
 	new Plugify_GForm_Braintree();

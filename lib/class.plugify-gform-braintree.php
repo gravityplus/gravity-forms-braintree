@@ -22,6 +22,7 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 		add_action( 'admin_init', array( &$this, 'admin_init' ) );
 		add_action( 'wp_ajax_map_feed_fields', array( &$this, 'ajax_plugin_page' ) );
 		add_action( 'wp_ajax_delete_feed', array( &$this, 'ajax_delete_feed' ) );
+		add_action( 'wp_ajax_toggle_feed_active', array( &$this, 'ajax_toggle_feed_active' ) );
 
 		// Register filters
 		add_filter( 'gform_enable_credit_card_field', array( &$this, 'enable_credit_card' ), 10, 1 );
@@ -158,6 +159,22 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 	}
 
+	public function ajax_toggle_feed_active () {
+
+		if( !isset( $_REQUEST['feed_id'] ) || !is_numeric( $_REQUEST['feed_id'] ) )
+			wp_send_json_error();
+
+		$active = $_REQUEST['is_active'] == 1 ? 0 : 1;
+
+		$this->update_feed_active( $_REQUEST['feed_id'], $active );
+
+		wp_send_json_success( array(
+			'feed_id' => $_REQUEST['feed_id'],
+			'is_active' => $active
+		) );
+
+	}
+
 	public function insert_feed ( $form_id, $is_active, $meta ) {
 
 		global $wpdb;
@@ -188,6 +205,20 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 		}
 
 		return $result;
+
+	}
+
+	public function get_feed_table ( $form ) {
+
+		$columns               = $this->feed_list_columns();
+    $column_value_callback = array( $this, 'get_column_value' );
+    $feeds                 = $this->get_feeds( rgar( $form, 'id' ) );
+    $bulk_actions          = $this->get_bulk_actions();
+    $action_links          = $this->get_action_links();
+    $no_item_callback      = array($this, "feed_list_no_item_message");
+    $message_callback      = array($this, "feed_list_message");
+
+    return new Plugify_GFAddOnFeedsTable( $feeds, $this->_slug, $columns, $bulk_actions, $action_links, $column_value_callback, $no_item_callback, $message_callback );
 
 	}
 
@@ -434,7 +465,9 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 	public function get_save_success_message ( $sections ) {
 
 		if( $_GET['page'] == 'gf_settings' && $_GET['subview'] == 'Braintree' )
-		return __( 'Settings updated successfuly', 'gravity-forms-braintree' );
+			return __( 'Settings updated successfuly', 'gravity-forms-braintree' );
+		elseif( $_GET['page'] == $this->_slug && isset( $_GET['fid'] ) && isset( $_GET['id'] ) )
+			return __( 'Feed updated successfully. <a href="' . admin_url( 'admin.php?page=' . $this->_slug ) . '">Back to list</a>', 'gravity-forms-braintree' );
 
 		return parent::get_save_success_message( $sections );
 
