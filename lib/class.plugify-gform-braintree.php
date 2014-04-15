@@ -4,7 +4,7 @@
 
 final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
-	protected $_version = '0.1';
+	protected $_version = '0.8';
 	protected $_min_gravityforms_version = '1.7.9999';
 	protected $_slug = 'gravity-forms-braintree';
 	protected $_path = 'gravity-forms-braintree/init.php';
