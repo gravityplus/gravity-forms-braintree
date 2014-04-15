@@ -119,8 +119,13 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 		$url = admin_url( 'admin.php?page=' . sprintf( '%s&id=%s&fid=%s', $this->_slug, $_REQUEST['id'], $_REQUEST['fid'] ) );
 		$response = wp_remote_post( $url, array( 'cookies' => $_COOKIE ) );
 
-		if( $response['response']['code'] == '200' )
-		echo $response['body'];
+		if( !is_wp_error( $response ) ) {
+			if( $response['response']['code'] == '200' )
+			echo $response['body'];
+		}
+		else wp_send_json_error( array(
+			'message' => 'Sorry about this, but we can\'t seem to load the form fields right now. Please try again.'
+		) );
 
 		$html = ob_get_contents();
 		ob_end_clean();
