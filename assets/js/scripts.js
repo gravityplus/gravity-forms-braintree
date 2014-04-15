@@ -127,12 +127,20 @@ jQuery( function($) {
         feed_id: feed_id,
         is_active: is_active
       },
+      beforeSend: function () {
+
+        if( is_active )
+          img.attr('src', img.attr('src').replace('active1', 'active0'));
+        else
+          img.attr('src', img.attr('src').replace('active0', 'active1'));
+
+        is_active = !is_active;
+
+      },
       success: function ( result ) {
 
-        var active = result.data.is_active;
-
-        img.attr('src', img.attr('src').replace('active0', 'active' + active));
-        img.attr('src', img.attr('src').replace('active1', 'active' + active));
+        if( is_active != result.data.is_active )
+        alert( 'There was a problem with your request. Please refresh the page and try again. ');
 
       }
 
