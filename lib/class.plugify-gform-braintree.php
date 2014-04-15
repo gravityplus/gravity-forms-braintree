@@ -114,6 +114,18 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 		ob_start();
 
+
+		if( !isset( $_REQUEST['id'] ) || !isset( $_REQUEST['fid'] ) )
+			wp_send_json_error();
+
+		$form = GFAPI::get_form( $_REQUEST['id'] );
+
+		// Ensure selected form has a credit card field and and least one product or total field
+		if( count( GFCommon::get_fields_by_type( $form, array( 'creditcard' ) ) ) <= 0 || count( GFCommon::get_fields_by_type( $form, array( 'product' ) ) ) <= 0 )
+			wp_send_json_error( array(
+				'message' => 'You must select a form with a credit card field and at least one product field'
+			) );
+
 		// For anyone reading this, the below is not ideal. Could not figure out how to do this natively with GFFeedAddOn due
 		// to lack of documentation in Gravity Forms. We'll be updating this to something less hacky in the future!
 		$url = admin_url( 'admin.php?page=' . sprintf( '%s&id=%s&fid=%s', $this->_slug, $_REQUEST['id'], $_REQUEST['fid'] ) );
