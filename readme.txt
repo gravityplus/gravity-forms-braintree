@@ -12,7 +12,7 @@ Process credit card payments using Gravity Forms and Braintree Payments
 
 == Description ==
 
-Braintree Payments is a payment gateway provider owned by eBAY Inc, which allows you to proces credit card payments without the need for a bank merchant account, with full PCI-compliance, quickly and easily. No sensitive data is stored on your server, Braintree takes care of everything.
+Braintree Payments is a payment gateway provider owned by eBAY Inc, which allows you to proces credit card payments without the need for a bank merchant account and full PCI-compliance. No sensitive data such as credit card numbers are stored on your server, Braintree takes care of everything.
 
  > This plugin requires [Gravity Forms](http://gravityforms.com "Go to Gravity Forms") to be installed. It is a premium plugin which is well worth every cent.
  > You will also need a [Braintree Payments](http://www.braintreepayments.com) account.
@@ -53,9 +53,10 @@ Not currently, no
 No filters are currently available for this pre-release version
 
 == Screenshots ==
-1. Screenshot 1
-2. Screenshot 2
-3. Screenshot 3
+1. You will be initially greeted with the empty feed page, prompting you to configure your Braintree settings.
+2. Page for configuring your Braintree settings, such as Merchant ID
+3. Configuring a Gravity Forms Braintree feed
+4. List of active feeds
 
 == Changelog ==
 
