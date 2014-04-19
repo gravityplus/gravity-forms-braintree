@@ -459,6 +459,30 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 	}
 
+	public function settings_are_valid ( $settings ) {
+
+		if( empty( $settings ) )
+			return false;
+
+		foreach( $settings as $setting )
+			if( '' == $setting )
+				return false;
+
+		return true;
+
+	}
+
+	public function get_plugin_settings () {
+
+		$settings = parent::get_plugin_settings();
+
+		if( $this->settings_are_valid( $settings ) )
+			return $settings;
+		else
+			return false;
+
+	}
+
 	protected function feed_list_columns () {
 
 		return array(
@@ -473,10 +497,11 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 		$settings = $this->get_plugin_settings();
 
-		if( empty( $settings ) )
+		if( empty( $settings ) || $settings === FALSE )
 			return sprintf(__("<p style=\"padding: 10px 5px 5px;\">You have not yet configured your Braintree settings. Let's go %sdo that now%s!</p>", "gravityforms"), "<a href='" . admin_url( 'admin.php?page=gf_settings&subview=Braintree' ) . "'>", "</a>");
 		else
 			return sprintf(__("<p style=\"padding: 10px 5px 5px;\">You don't have any Braintree feeds configured. Let's go %screate one%s!</p>", "gravityforms"), "<a href='" . admin_url( 'admin.php?page=gravity-forms-braintree&id=0&fid=0' ) . "'>", "</a>");
+
 	}
 
 	public function get_save_success_message ( $sections ) {
