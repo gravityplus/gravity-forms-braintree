@@ -526,6 +526,9 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 
 	public function process_feed( $feed, $entry, $form ) {
 
+		if( $feed['is_active'] == 0 )
+			return false;
+
 		// Proceed only if settings exist
 		if( $settings = $this->get_plugin_settings() ) {
 
