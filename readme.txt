@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=hello
 Tags: credit card,braintree,gravity form,payment
 Requires at least: 3.6
 Tested up to: 3.9
-Stable tag: 0.8
+Stable tag: 0.8.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,7 +19,7 @@ Braintree Payments is a payment gateway provider owned by eBAY Inc, which allows
 
  > Requires at least WordPress 3.6 and Gravity Forms 1.8.1
 
-There are just three simple steps to begin leveraging your Braintree Payments account:
+There are just a few simple steps to begin leveraging your Braintree Payments account:
 
 1. Install the Gravity Forms Braintree plugin
 2. Navigate to Forms -> Braintree in your WordPress admin area
@@ -58,6 +58,10 @@ No filters are currently available for this pre-release version
 3. Screenshot 3
 
 == Changelog ==
+
+= 0.8.1 =
+* Stricter settings validation
+* Fixed bug causing inactive feeds to process
 
 = 0.8 =
 * Most of plugin functionality
