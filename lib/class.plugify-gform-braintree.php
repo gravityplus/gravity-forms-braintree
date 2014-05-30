@@ -535,7 +535,7 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 			// Build Braintree HTTP request parameters
 			$args = array(
 
-				'amount' => trim( $entry[ $feed['meta']['gf_braintree_mapped_fields_amount'] ], "$ \t\n\r\0\x0B" ),
+				'amount' => str_replace( ',', '', trim( $entry[ $feed['meta']['gf_braintree_mapped_fields_amount'] ], "$ \t\n\r\0\x0B" ) ),
 				'orderId' => $entry['id'],
 				'creditCard' => array(
 					'number' => $_POST[ 'input_' . str_replace( '.', '_', $feed['meta']['gf_braintree_mapped_fields_cc_number'] ) ],
