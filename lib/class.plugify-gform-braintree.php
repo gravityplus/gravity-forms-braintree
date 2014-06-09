@@ -62,6 +62,14 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
       array(
         'fields' => array(
 					array(
+						'label' => 'Name',
+						'type' => 'text',
+						'name' => 'name',
+						'value' => '',
+						'class' => 'small',
+						'required' => 1
+					),
+					array(
 						'label' => '',
 						'type' => 'hidden',
 						'name' => 'transaction_type',
@@ -236,8 +244,7 @@ final class Plugify_GForm_Braintree extends GFFeedAddOn {
 	protected function feed_list_columns () {
 
 		return array(
-			'id' => __( 'Feed ID', 'gravity-forms-braintree' ),
-			'form' => __( 'Form', 'gravity-forms-braintree' ),
+			'name' => __( 'Name', 'gravity-forms-braintree' ),
 			'txntype' => __( 'Transaction Type', 'gravity-forms-braintree' )
 		);
 
