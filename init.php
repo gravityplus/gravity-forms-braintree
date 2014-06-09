@@ -9,15 +9,16 @@ Author URI: http://plugify.io
 */
 
 // Ensure WordPress has been bootstrapped
-if( !defined( 'ABSPATH' ) )
+if( !defined( 'ABSPATH' ) ) {
 	exit;
+}
 
 $path = trailingslashit( dirname( __FILE__ ) );
 
-// Ensure Gravity Forms is installed and good to go
-if( class_exists( 'GFForms' ) ) {
+// Ensure Gravity Forms (payment addon framework) is installed and good to go
+if( is_callable( array( 'GFForms', 'include_payment_addon_framework' ) ) ) {
 
-	GFForms::include_feed_addon_framework();
+	GFForms::include_payment_addon_framework();
 
 	// Require Braintree Payments core
 	require_once $path . 'lib/Braintree.php';

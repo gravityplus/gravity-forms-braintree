@@ -2,7 +2,7 @@
 
 // Plugify_GForm_Braintree class
 
-final class Plugify_GForm_Braintree extends GFFeedAddOn {
+final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 	protected $_version = '0.9';
 	protected $_min_gravityforms_version = '1.7.9999';
