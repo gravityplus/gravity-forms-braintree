@@ -8,7 +8,7 @@ Stable tag: 1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Process credit card payments using Gravity Forms and Braintree Payments
+Allow your customers to purchase goods and services through Gravity Forms via Braintree Payments
 
 == Description ==
 

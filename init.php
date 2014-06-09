@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms Braintree AddOn
 Plugin URI: http://plugify.io/
-Description: Allows you to accept credit card payments using Gravity Forms and Braintree Payments
+Description: Allow your customers to purchase goods and services through Gravity Forms via Braintree Payments
 Author: Plugify
 Version: 1.0
 Author URI: http://plugify.io
