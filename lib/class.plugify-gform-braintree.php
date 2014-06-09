@@ -16,6 +16,11 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
   protected $_supports_callbacks = false;
   protected $_enable_rg_autoupgrade = true;
 
+	/**
+	* Class constructor. Send __construct call to parent
+	* @since 1.0
+	* @return void
+	*/
 	public function __construct () {
 
 		// Build parent
@@ -23,6 +28,12 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 	}
 
+	/**
+	* Override init_frontend to assign front end based filters and actions required for operation
+	*
+	* @since 1.0
+	* @return void
+	*/
 	public function init_frontend () {
 
 		// Filters for front end use
@@ -30,12 +41,45 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 	}
 
+	/**
+	* After form has been submitted, send CC details to Braintree and ensure the card is going to work
+	* If not, void the validation result (processed elsewhere) and have the submit the form again
+	*
+	* @param $feed - Current configured payment feed
+	* @param $submission_data - Contains form field data submitted by the user as well as payment information (i.e. payment amount, setup fee, line items, etc...)
+	* @param $form - Current form array containing all form settings
+	* @param $entry - Current entry array containing entry information (i.e data submitted by users). NOTE: the entry hasn't been saved to the database at this point, so this $entry object does not have the "ID" property and is only a memory representation of the entry.
+	* @return array - Return an $authorization array in the following format:
+	* [
+	*  "is_authorized" => true|false,
+	*  "error_message" => "Error message",
+	*  "transaction_id" => "XXX",
+	*
+	*  //If the payment is captured in this method, return a "captured_payment" array with the following information about the payment
+	*  "captured_payment" => ["is_success"=>true|false, "error_message" => "error message", "transaction_id" => "xxx", "amount" => 20]
+	* ]
+	* @since 1.0
+	* @return void
+	*/
 	public function authorize( $feed, $submission_data, $form, $entry ) {
 
-		
+		wp_die('omg');
+
+		if( $settings = get_plugin_settings() ) {
+
+
+
+		}
 
 	}
 
+	/**
+	* Read the response from Braintree and invalidate the CC field if necessary
+	* Leverages filter 'gform_validation'
+	* @param $validation Gravity Forms validation object
+	* @since 1.0
+	* @return void
+	*/
 	public function validate_credit_card_response ( $validation ) {
 
 		// Return unfiltered result if no Braintree feed is configured
@@ -60,17 +104,22 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 	}
 
-	public function get_column_value_form ( $item ) {
-
-		$form = GFAPI::get_form( $item['form_id'] );
-		return __( $form['title'], 'gravity-forms-braintree' );
-
-	}
-
+	/**
+	* Propulate Transaction Type columns
+	* @param $item List table (feed) item
+	* @since 1.0
+	* @return void
+	*/
 	public function get_column_value_txntype ( $item ) {
 		return __( 'Single payment', 'gravity-forms-braintree' );
 	}
 
+	/**
+	* Create and display feed settings fields
+	*
+	* @since 1.0
+	* @return void
+	*/
 	public function feed_settings_fields() {
 
     return array(
@@ -156,6 +205,12 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
   }
 
+	/**
+	* Create and display plugin settings fields. These are settings for Braintree in particular, not a feed
+	*
+	* @since 1.0
+	* @return void
+	*/
 	public function plugin_settings_fields () {
 
 		return array(
@@ -233,6 +288,13 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 	}
 
+	/**
+	* Helper function to determine if all Braintree settings have been set.
+	* Does not check if they are correct, only that they have been set, IE not null
+	* @param @settings Plugin settings to check if valid
+	* @since 1.0
+	* @return void
+	*/
 	public function settings_are_valid ( $settings ) {
 
 		if( empty( $settings ) )
@@ -246,6 +308,12 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 	}
 
+	/**
+	* Get plugin settings
+	*
+	* @since 1.0
+	* @return void
+	*/
 	public function get_plugin_settings () {
 
 		$settings = parent::get_plugin_settings();
@@ -257,6 +325,12 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 	}
 
+	/**
+	* Configure columns which are displayed in the feed list table
+	*
+	* @since 1.0
+	* @return void
+	*/
 	protected function feed_list_columns () {
 
 		return array(
