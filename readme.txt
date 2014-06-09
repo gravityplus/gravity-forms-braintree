@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=hello
 Tags: credit card,braintree,gravity form,payment
 Requires at least: 3.6
 Tested up to: 3.9
-Stable tag: 0.9
+Stable tag: 1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,11 @@ No filters are currently available for this pre-release version
 4. List of active feeds
 
 == Changelog ==
+
+= 1.0 =
+* Updated to latest Gravity Forms payment framework
+* Added authorization validation
+* Added subscription/recurring payment support
 
 = 0.8.1 =
 * Stricter settings validation
