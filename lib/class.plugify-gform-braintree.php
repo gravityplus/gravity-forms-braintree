@@ -39,6 +39,9 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 		// Filters for front end use
 		add_filter( 'gform_validation', array( &$this, 'validate_credit_card_response' ) );
 
+		// init_frontend on GFPaymentAddOn
+		parent::init_frontend();
+
 	}
 
 	/**
@@ -61,15 +64,45 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	* @since 1.0
 	* @return void
 	*/
-	public function authorize( $feed, $submission_data, $form, $entry ) {
+	protected function authorize( $feed, $submission_data, $form, $entry ) {
 
-		wp_die('omg');
+		if( $settings = $this->get_plugin_settings() ) {
 
-		if( $settings = get_plugin_settings() ) {
-
-
+			return array(
+				'is_authorized' => true,
+				'error_message' => 'Error message placeholder',
+				'transaction_id' => 'Erterte#$435353'
+			);
 
 		}
+
+	}
+
+	/**
+	* When a single payment has been authorized, perform the capture
+	* @param $authorization - Contains the result of the authorize() function
+	* @param $feed - Current configured payment feed
+	* @param $submission_data - Contains form field data submitted by the user as well as payment information (i.e. payment amount, setup fee, line items, etc...)
+	* @param $form - Current form array containing all form settings
+	* @param $entry - Current entry array containing entry information (i.e data submitted by users).
+	* @return array - Return an array with the information about the captured payment in the following format:
+	* [
+	*	"is_success"=>true|false,
+	*	"error_message" => "error message",
+	*	"transaction_id" => "xxx",
+	*	"amount" => 20,
+	*	"payment_method" => "Visa"
+	*  ]
+	*/
+	protected function capture( $authorization, $feed, $submission_data, $form, $entry ) {
+
+		return array(
+			'is_success' => true,
+			'error_message' => 'error message goes here',
+			'transaction_id' => 'Erterte#$435353',
+			'amount' => 50,
+			'payment_method' => 'Visa'
+		);
 
 	}
 
@@ -121,89 +154,8 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	* @return void
 	*/
 	public function feed_settings_fields() {
-
-    return array(
-
-      array(
-        'fields' => array(
-					array(
-						'label' => 'Name',
-						'type' => 'text',
-						'name' => 'name',
-						'value' => '',
-						'class' => 'small',
-						'required' => 1
-					),
-					array(
-						'label' => '',
-						'type' => 'hidden',
-						'name' => 'transaction_type',
-						'value' => 'Single Payment',
-						'class' => 'small'
-					),
-          array(
-            'name' => 'gf_braintree_mapped_fields',
-            'label' => 'Map Fields',
-            'type' => 'field_map',
-            'field_map' => array(
-							array(
-								'name' => 'first_name',
-								'label' => 'First Name',
-								'required' => 1,
-							),
-							array(
-								'name' => 'last_name',
-								'label' => 'Last Name',
-								'required' => 1
-							),
-							array(
-								'name' => 'company',
-								'label' => 'Company (optional)',
-								'required' => 0
-							),
-							array(
-								'name' => 'email',
-								'label' => 'Email',
-								'required' => 1
-							),
-							array(
-								'name' => 'phone',
-								'label' => 'Phone (optional)',
-								'required' => 0
-							),
-							array(
-								'name' => 'cc_number',
-								'label' => 'Credit Card Number',
-								'required' => 1
-							),
-							array(
-								'name' => 'cc_expiry',
-								'label' => 'Credit Card Expiry',
-								'required' => 1
-							),
-							array(
-								'name' => 'cc_security_code',
-								'label' => 'Security Code (eg CVV)',
-								'required' => 1
-							),
-							array(
-								'name' => 'cc_cardholder',
-								'label' => 'Cardholder Name',
-								'required' => 1
-							),
-							array(
-								'name' => 'amount',
-								'label' => 'Payment Amount',
-								'required' => 1
-							)
-          	)
-          )
-        )
-      )
-
-    );
-
-  }
+		return parent::feed_settings_fields();
+	}
 
 	/**
 	* Create and display plugin settings fields. These are settings for Braintree in particular, not a feed
