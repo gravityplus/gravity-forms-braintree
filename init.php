@@ -18,6 +18,7 @@ $path = trailingslashit( dirname( __FILE__ ) );
 // Ensure Gravity Forms (payment addon framework) is installed and good to go
 if( is_callable( array( 'GFForms', 'include_payment_addon_framework' ) ) ) {
 
+	// Bootstrap payment addon framework
 	GFForms::include_payment_addon_framework();
 
 	// Require Braintree Payments core
@@ -25,7 +26,6 @@ if( is_callable( array( 'GFForms', 'include_payment_addon_framework' ) ) ) {
 
 	// Require plugin entry point
 	require_once $path . 'lib/class.plugify-gform-braintree.php';
-	require_once $path . 'lib/class.plugify-gfaddonfeedstable.php';
 
 	// Fire off entry point
 	new Plugify_GForm_Braintree();
