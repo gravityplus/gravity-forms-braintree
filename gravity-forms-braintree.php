@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Gravity Forms Braintree AddOn
+Plugin Name: Gravity Forms Braintree Add-On
 Plugin URI: http://plugify.io/
 Description: Allow your customers to purchase goods and services through Gravity Forms via Braintree Payments
 Author: Plugify
