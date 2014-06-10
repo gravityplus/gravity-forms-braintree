@@ -265,10 +265,12 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 		$settings = parent::get_plugin_settings();
 
-		if( $this->settings_are_valid( $settings ) )
+		if( $this->settings_are_valid( $settings ) ) {
 			return $settings;
-		else
+		}
+		else {
 			return false;
+		}
 
 	}
 
