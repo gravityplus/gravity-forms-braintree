@@ -10,7 +10,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
   protected $_slug = 'gravity-forms-braintree';
   protected $_path = 'gravity-forms-braintree/lib/class.plugify-gform-braintree.php';
   protected $_full_path = __FILE__;
-  protected $_title = 'Gravity Forms Braintree Add-On';
+  protected $_title = 'Braintree';
   protected $_short_title = 'Braintree';
   protected $_requires_credit_card = true;
   protected $_supports_callbacks = false;
@@ -143,16 +143,6 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	}
 
 	/**
-	* Propulate Transaction Type columns
-	* @param $item List table (feed) item
-	* @since 1.0
-	* @return void
-	*/
-	public function get_column_value_txntype ( $item ) {
-		return __( 'Single payment', 'gravity-forms-braintree' );
-	}
-
-	/**
 	* Create and display feed settings fields
 	*
 	* @since 1.0
@@ -279,21 +269,6 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 			return $settings;
 		else
 			return false;
-
-	}
-
-	/**
-	* Configure columns which are displayed in the feed list table
-	*
-	* @since 1.0
-	* @return void
-	*/
-	protected function feed_list_columns () {
-
-		return array(
-			'name' => __( 'Name', 'gravity-forms-braintree' ),
-			'txntype' => __( 'Transaction Type', 'gravity-forms-braintree' )
-		);
 
 	}
 
