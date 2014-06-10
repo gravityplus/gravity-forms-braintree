@@ -78,4 +78,4 @@ No filters are currently available for this pre-release version
 
 == Upgrade notice ==
 
-IMPORTANT! In this version, the settings page has been moved. Please go to
+IMPORTANT! Version 1.0 is a complete overhaul from the previous version. Your existing feeds will not work. Please make sure you check all your feeds and ensure they function correctly.
