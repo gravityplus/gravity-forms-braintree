@@ -1,4 +1,4 @@
-=== Gravity Forms Braintree AddOn ===
+=== Gravity Forms Braintree Add-On ===
 Contributors: Plugify, hello@lukerollans.me
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=hello%40plugify%2eio&lc=GB&item_name=Plugin%20Development%20Donation&currency_code=USD
 Tags: credit card,braintree,gravity form,payment
