@@ -148,8 +148,19 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	* @since 1.0
 	* @return void
 	*/
-	public function feed_settings_fields() {
-		return parent::feed_settings_fields();
+	public function feed_settings_fields () {
+
+		// Get defaults from GFPaymentAddOn
+		$settings = parent::feed_settings_fields();
+
+		// Remove billing information
+		$settings = $this->remove_field( 'billingInformation', $settings );
+
+		// Remove options
+		$settings = $this->remove_field( 'options', $settings );
+
+		return $settings;
+
 	}
 
 	/**
