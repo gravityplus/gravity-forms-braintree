@@ -63,7 +63,6 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	*/
 	protected function authorize( $feed, $submission_data, $form, $entry ) {
 
-
 		// Prepare authorization response payload
 		$authorization = array(
 			'is_authorized' => false,
@@ -78,7 +77,8 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 		);
 
 
-		// Perform captuare in this function. For this version, we won't authorize and then capture later
+		// Perform capture in this function. For this version, we won't authorize and then capture later
+		// at least, not in this version
 		if( $settings = $this->get_plugin_settings() ) {
 
 			// Prepare Braintree payload
@@ -143,7 +143,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	}
 
 	/**
-	* Create and display feed settings fields
+	* Create and display feed settings fields.
 	*
 	* @since 1.0
 	* @return void
