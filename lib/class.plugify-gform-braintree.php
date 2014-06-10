@@ -159,6 +159,18 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 		// Remove options
 		$settings = $this->remove_field( 'options', $settings );
 
+		// Remove the subscription option from transaction type dropdown
+		$transaction_type = $this->get_field( 'transactionType', $settings );
+
+		foreach( $transaction_type['choices'] as $index => $choice ) {
+			if( $choice['value'] == 'subscription' ) {
+				unset( $transaction_type['choices'][$index] );
+			}
+		}
+
+		$settings = $this->replace_field( 'transactionType', $transaction_type, $settings );
+
+		// Return sanitized settings
 		return $settings;
 
 	}
