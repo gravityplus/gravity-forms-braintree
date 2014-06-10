@@ -193,21 +193,21 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
             'tooltip' => 'Your Braintree Merchant ID',
             'label' => 'Merchant ID',
             'type' => 'text',
-            'class' => 'small'
+            'class' => 'medium'
           ),
 					array(
 						'name' => 'public-key',
 						'tooltip' => 'Your Braintree Account Public Key',
 						'label' => 'Public Key',
 						'type' => 'text',
-						'class' => 'small'
+						'class' => 'medium'
 					),
 					array(
 						'name' => 'private-key',
 						'tooltip' => 'Your Braintree Account Private Key',
 						'label' => 'Private Key',
 						'type' => 'text',
-						'class' => 'small'
+						'class' => 'medium'
 					)
         )
       ),
