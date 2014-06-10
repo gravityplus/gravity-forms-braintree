@@ -36,9 +36,6 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	*/
 	public function init_frontend () {
 
-		// Filters for front end use
-		add_filter( 'gform_validation', array( &$this, 'validate_credit_card_response' ) );
-
 		// init_frontend on GFPaymentAddOn
 		parent::init_frontend();
 
@@ -66,74 +63,82 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	*/
 	protected function authorize( $feed, $submission_data, $form, $entry ) {
 
-		if( $settings = $this->get_plugin_settings() ) {
 
-			return array(
-				'is_authorized' => true,
-				'error_message' => 'Error message placeholder',
-				'transaction_id' => 'Erterte#$435353'
-			);
-
-		}
-
-	}
-
-	/**
-	* When a single payment has been authorized, perform the capture
-	* @param $authorization - Contains the result of the authorize() function
-	* @param $feed - Current configured payment feed
-	* @param $submission_data - Contains form field data submitted by the user as well as payment information (i.e. payment amount, setup fee, line items, etc...)
-	* @param $form - Current form array containing all form settings
-	* @param $entry - Current entry array containing entry information (i.e data submitted by users).
-	* @return array - Return an array with the information about the captured payment in the following format:
-	* [
-	*	"is_success"=>true|false,
-	*	"error_message" => "error message",
-	*	"transaction_id" => "xxx",
-	*	"amount" => 20,
-	*	"payment_method" => "Visa"
-	*  ]
-	*/
-	protected function capture( $authorization, $feed, $submission_data, $form, $entry ) {
-
-		return array(
-			'is_success' => true,
-			'error_message' => 'error message goes here',
-			'transaction_id' => 'Erterte#$435353',
-			'amount' => 50,
-			'payment_method' => 'Visa'
+		// Prepare authorization response payload
+		$authorization = array(
+			'is_authorized' => false,
+			'error_message' => apply_filters( 'gform_braintree_credit_card_failure_message', __( 'Your card could not be billed. Please ensure the details you entered are correct and try again.', 'gravity-forms-braintree' ) ),
+			'transaction_id' => '',
+			'captured_payment' => array(
+				'is_success' => false,
+				'error_message' => '',
+				'transaction_id' => '',
+				'amount' => $submission_data['payment_amount']
+			)
 		);
 
-	}
 
-	/**
-	* Read the response from Braintree and invalidate the CC field if necessary
-	* Leverages filter 'gform_validation'
-	* @param $validation Gravity Forms validation object
-	* @since 1.0
-	* @return void
-	*/
-	public function validate_credit_card_response ( $validation ) {
+		// Perform captuare in this function. For this version, we won't authorize and then capture later
+		if( $settings = $this->get_plugin_settings() ) {
 
-		// Return unfiltered result if no Braintree feed is configured
-		if( !$this->has_feed( $validation['form']['id'] ) ) {
-			return $validation;
-		}
+			// Prepare Braintree payload
+			$args = array(
+				'amount' => $submission_data['payment_amount'],
+				'creditCard' => array(
+					'number' => $submission_data['card_number'],
+					'expirationDate' => sprintf( '%s/%s', $submission_data['card_expiration_date'][0], $submission_data['card_expiration_date'][1]),
+					'cardholderName' => $submission_data['card_name'],
+					'cvv' => $submission_data['card_security_code']
+				)
+			);
 
-		// Loop through fields in form until credit card field is found
-		foreach( $validation['form']['fields'] as &$field ) {
+			try {
 
-			// Skip to next iteration if this is not the credit card field
-	    if( GFFormsModel::get_input_type( $field ) != 'creditcard' ) {
-				continue;
+				// Configure Braintree environment
+				Braintree_Configuration::environment( strtolower( $settings['environment'] ) );
+				Braintree_Configuration::merchantId( $settings['merchant-id']);
+				Braintree_Configuration::publicKey( $settings['public-key'] );
+				Braintree_Configuration::privateKey( $settings['private-key'] );
+
+				// Send transaction to Braintree
+				$result = Braintree_Transaction::sale( $args );
+
+				// Update response to reflect successful payment
+				if( $result->success == '1' ) {
+
+					$authorization['is_authorized'] = true;
+					$authorization['error_message'] = '';
+					$authorization['transaction_id'] = $result->transaction->_attributes['id'];
+
+					$authorization['captured_payment'] = array(
+						'is_success' => true,
+						'transaction_id' => $result->transaction->_attributes['id'],
+						'amount' => $result->transaction->_attributes['amount'],
+						'error_message' => '',
+						'payment_method' => 'Credit Card'
+					);
+
+				}
+				else {
+
+					// Append gateway response text to error message if it exists. If it doesn't exist, a more hardcore
+					// failure has occured and it won't do the user any good to see it other than a general error message
+					if( isset( $result->_attributes['transaction']->_attributes['processorResponseText'] ) ) {
+						$authorization['error_message'] .= sprintf( '. Your bank said: %s.', $result->_attributes['transaction']->_attributes['processorResponseText'] );
+					}
+
+				}
+
+			}
+			catch( Exception $e ) {
+				// Do nothing with exception object, just fallback to generic failure
 			}
 
-			// There shouldn't be more than one cc field per form, so break once it has been found and processed
-			break;
+			return $authorization;
 
 		}
 
-		return $validation;
+		return false;
 
 	}
 
