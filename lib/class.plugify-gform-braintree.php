@@ -100,6 +100,11 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 				Braintree_Configuration::publicKey( $settings['public-key'] );
 				Braintree_Configuration::privateKey( $settings['private-key'] );
 
+				// Set to auto settlemt if applicable
+				if( $settings['settlement'] == 'Yes' ) {
+					$args['options']['submitForSettlement'] = 'true';
+				}
+				
 				// Send transaction to Braintree
 				$result = Braintree_Transaction::sale( $args );
 
