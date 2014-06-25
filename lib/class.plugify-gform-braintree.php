@@ -81,11 +81,14 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 		// at least, not in this version
 		if( $settings = $this->get_plugin_settings() ) {
 
+			// Sanitize card number, removing dashes and spaces
+			$card_number = str_replace( array( '-', ' ' ), '', $submission_data['card_number'] );
+
 			// Prepare Braintree payload
 			$args = array(
 				'amount' => $submission_data['payment_amount'],
 				'creditCard' => array(
-					'number' => $submission_data['card_number'],
+					'number' => $card_number,
 					'expirationDate' => sprintf( '%s/%s', $submission_data['card_expiration_date'][0], $submission_data['card_expiration_date'][1]),
 					'cardholderName' => $submission_data['card_name'],
 					'cvv' => $submission_data['card_security_code']
@@ -104,7 +107,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 				if( $settings['settlement'] == 'Yes' ) {
 					$args['options']['submitForSettlement'] = 'true';
 				}
-				
+
 				// Send transaction to Braintree
 				$result = Braintree_Transaction::sale( $args );
 
