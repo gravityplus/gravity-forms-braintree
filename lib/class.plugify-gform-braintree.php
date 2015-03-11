@@ -92,7 +92,16 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 					'expirationDate' => sprintf( '%s/%s', $submission_data['card_expiration_date'][0], $submission_data['card_expiration_date'][1]),
 					'cardholderName' => $submission_data['card_name'],
 					'cvv' => $submission_data['card_security_code']
-				)
+				),
+				'customer' => array(
+					'firstName' => $submission_data['card_name']
+				  ),
+				'billing' => array(
+					'firstName' => $submission_data['card_name'],
+					'streetAddress' => $submission_data['address'],
+					'locality' => $submission_data['city'],
+					'postalCode' => $submission_data['zip']
+					)
 			);
 
 			try {
@@ -162,7 +171,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 		$settings = parent::feed_settings_fields();
 
 		// Remove billing information
-		$settings = $this->remove_field( 'billingInformation', $settings );
+		//$settings = $this->remove_field( 'billingInformation', $settings );
 
 		// Remove options
 		$settings = $this->remove_field( 'options', $settings );
