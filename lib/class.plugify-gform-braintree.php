@@ -61,7 +61,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	* @since 1.0
 	* @return void
 	*/
-	protected function authorize( $feed, $submission_data, $form, $entry ) {
+	public function authorize( $feed, $submission_data, $form, $entry ) {
 
 		// Prepare authorization response payload
 		$authorization = array(
