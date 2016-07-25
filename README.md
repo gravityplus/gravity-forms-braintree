@@ -19,7 +19,8 @@ Braintree Payments is a payment gateway provider owned by eBAY Inc, which allows
 * Quick and easy setup
 
 ## Subscriptions
-The plugin does not currently support Braintree Subscriptions. Keep a look out for it in a future version
+
+* Includes basic subscription functionality that searches for plans in the account and attempts to match the dollar amount of a plan to the amount specified.
 
 ## Upgrade Notice
 If you are updating from a version previous to 1.0, your existing feeds will not work. Please make sure you check all your feeds and ensure they function correctly.
