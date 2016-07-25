@@ -6,7 +6,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 	protected $_version = '1.0';
 
-  protected $_min_gravityforms_version = '1.8.7.16';
+  protected $_min_gravityforms_version = '2.0.3';
   protected $_slug = 'gravity-forms-braintree';
   protected $_path = 'gravity-forms-braintree/lib/class.plugify-gform-braintree.php';
   protected $_full_path = __FILE__;
@@ -107,10 +107,10 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 			try {
 
 				// Configure Braintree environment
-				Braintree_Configuration::environment( strtolower( $settings['environment'] ) );
-				Braintree_Configuration::merchantId( $settings['merchant-id']);
-				Braintree_Configuration::publicKey( $settings['public-key'] );
-				Braintree_Configuration::privateKey( $settings['private-key'] );
+				Braintree\Configuration::environment( strtolower( $settings['environment'] ) );
+				Braintree\Configuration::merchantId( $settings['merchant-id']);
+				Braintree\Configuration::publicKey( $settings['public-key'] );
+				Braintree\Configuration::privateKey( $settings['private-key'] );
 
 				// Set to auto settlemt if applicable
 				if( $settings['settlement'] == 'Yes' ) {
@@ -118,7 +118,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 				}
 
 				// Send transaction to Braintree
-				$result = Braintree_Transaction::sale( $args );
+				$result = Braintree\Transaction::sale( $args );
 
 				// Update response to reflect successful payment
 				if( $result->success == '1' ) {
@@ -160,6 +160,132 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	}
 
 	/**
+	 * Override this method to add integration code to the payment processor in order to create a subscription. This method is executed during the form validation process and allows
+	 * the form submission process to fail with a validation error if there is anything wrong when creating the subscription.
+	 *
+	 * @param $feed - Current configured payment feed
+	 * @param $submission_data - Contains form field data submitted by the user as well as payment information (i.e. payment amount, setup fee, line items, etc...)
+	 * @param $form - Current form array containing all form settings
+	 * @param $entry - Current entry array containing entry information (i.e data submitted by users). NOTE: the entry hasn't been saved to the database at this point, so this $entry object does not have the 'ID' property and is only a memory representation of the entry.
+	 *
+	 * @return array - Return an $subscription array in the following format:
+	 * [
+	 *  'is_success'=>true|false,
+	 *  'error_message' => 'error message',
+	 *  'subscription_id' => 'xxx',
+	 *  'amount' => 10
+	 *
+	 *  //To implement an initial/setup fee for gateways that don't support setup fees as part of subscriptions, manually capture the funds for the setup fee as a separate transaction and send that payment
+	 *  //information in the following 'captured_payment' array
+	 *  'captured_payment' => ['name' => 'Setup Fee', 'is_success'=>true|false, 'error_message' => 'error message', 'transaction_id' => 'xxx', 'amount' => 20]
+	 * ]
+	 */
+	public function subscribe( $feed, $submission_data, $form, $entry ) {
+
+		// Prepare authorization response payload
+		$authorization = [
+			'is_authorized' => false,
+			'error_message' => apply_filters( 'gform_braintree_credit_card_failure_message', __( 'Your card could not be billed. Please ensure the details you entered are correct and try again.', 'gravity-forms-braintree' ) ),
+			'subscription_id' => '',
+			'amount' => '',
+			'captured_payment' => [
+				'is_success' => false,
+				'error_message' => '',
+				'subscription_id' => '',
+				'amount' => $submission_data['payment_amount']
+			]
+		];
+
+		if( $settings = $this->get_plugin_settings() ) {
+
+			// Sanitize card number, removing dashes and spaces
+			$card_number = str_replace( array( '-', ' ' ), '', $submission_data['card_number'] );
+
+			// Prepare Braintree payload
+			$namePieces = explode(' ', $submission_data['card_name']);
+			$args = [
+				'creditCard' => [
+					'billingAddress' => [
+						'countryName' => $submission_data['country'],
+						'streetAddress' => $submission_data['address'],
+						'locality' => $submission_data['city'],
+						'region' => $submission_data['state'],
+						'postalCode' => $submission_data['zip']
+					],
+					'number' => $card_number,
+					'expirationDate' => sprintf( '%s/%s', $submission_data['card_expiration_date'][0], $submission_data['card_expiration_date'][1]),
+					'cardholderName' => $submission_data['card_name'],
+					'cvv' => $submission_data['card_security_code']
+				],
+				'email' => $submission_data['email'],
+				'lastName' => array_pop($namePieces),
+				'firstName' => implode(' ', $namePieces)
+			];
+
+			// Configure Braintree environment
+			Braintree\Configuration::environment(strtolower($settings['environment']));
+			Braintree\Configuration::merchantId($settings['merchant-id']);
+			Braintree\Configuration::publicKey($settings['public-key']);
+			Braintree\Configuration::privateKey($settings['private-key']);
+
+			$plans = Braintree\Plan::all();
+
+			// See if there is a plan with a matching dollar value.
+			$thePlan = null;
+			if (count($plans) == 1) {
+				$thePlan = $plans[0];
+			} else if (count($plans) > 1) {
+				foreach ($plans as $plan) {
+					if ((float)$submission_data['payment_amount'] == (float)$plan->price) {
+						$thePlan = $plan;
+						break;
+					}
+				}
+				if (empty($thePlan)) {
+					$thePlan = $plans[0];
+				}
+			} else {
+				$authorization['error_message'] = apply_filters( 'gform_braintree_no_plans_failure_message', __( 'No subscription plans are available.', 'gravity-forms-braintree' ) );
+			}
+
+			if (!empty($thePlan)) {
+				$result = Braintree\Customer::create($args);
+
+				if (!empty($result)) {
+					$subscriptionResult = Braintree\Subscription::create([
+						'paymentMethodToken' => $result->customer->creditCards[0]->token,
+						'planId' => $thePlan->id
+					]);
+
+					if( $subscriptionResult->success == true ) {
+
+						$authorization['is_success'] = true;
+						$authorization['error_message'] = '';
+						$authorization['subscription_id'] = $subscriptionResult->subscription->_attributes['id'];
+						$authorization['amount'] = $subscriptionResult->subscription->_attributes['price'];
+
+						$authorization['captured_payment'] = [
+							'is_success' => true,
+							'subscription_id' => $subscriptionResult->subscription->_attributes['id'],
+							'amount' => $subscriptionResult->subscription->_attributes['price'],
+							'error_message' => ''
+						];
+
+					}
+				} else {
+					$authorization['error_message'] = apply_filters( 'gform_braintree_customer_create_failure_message', __( 'Failed to create a customer.', 'gravity-forms-braintree' ) );
+				}
+			} else {
+				$authorization['error_message'] = apply_filters( 'gform_braintree_no_plan_message', __( 'No subscription plan found.', 'gravity-forms-braintree' ) );
+			}
+
+			return $authorization;
+		}
+
+		return false;
+	}
+
+	/**
 	* Create and display feed settings fields.
 	*
 	* @since 1.0
@@ -178,12 +304,6 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 		// Remove the subscription option from transaction type dropdown
 		$transaction_type = $this->get_field( 'transactionType', $settings );
-
-		foreach( $transaction_type['choices'] as $index => $choice ) {
-			if( $choice['value'] == 'subscription' ) {
-				unset( $transaction_type['choices'][$index] );
-			}
-		}
 
 		$settings = $this->replace_field( 'transactionType', $transaction_type, $settings );
 
