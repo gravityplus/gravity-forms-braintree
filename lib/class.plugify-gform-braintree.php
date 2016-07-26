@@ -265,10 +265,17 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 					if (get_class($result) != 'Braintree\Customer') {
 						$result = $result->customer;
 					}
-					$subscriptionResult = Braintree\Subscription::create([
+
+					$subscription = [
 						'paymentMethodToken' => $result->creditCards[0]->token,
 						'planId' => $thePlan->id
-					]);
+					];
+
+					if ((float)$submission_data['payment_amount'] != (float)$plan->price) {
+						$subscription['price'] = (float)$submission_data['payment_amount'];
+					}
+
+					$subscriptionResult = Braintree\Subscription::create($subscription);
 
 					if( $subscriptionResult->success == true ) {
 
@@ -292,17 +299,16 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 				$authorization['error_message'] = apply_filters( 'gform_braintree_no_plan_message', __( 'No subscription plan found.', 'gravity-forms-braintree' ) );
 			}
 
-			return $authorization;
 		}
 
-		return false;
+		return $authorization;
 	}
 
 	/**
 	* Create and display feed settings fields.
 	*
 	* @since 1.0
-	* @return void
+	* @return array
 	*/
 	public function feed_settings_fields () {
 
@@ -329,7 +335,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	* Create and display plugin settings fields. These are settings for Braintree in particular, not a feed
 	*
 	* @since 1.0
-	* @return void
+	* @return array
 	*/
 	public function plugin_settings_fields () {
 
@@ -413,7 +419,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	* Does not check if they are correct, only that they have been set, IE not null
 	* @param @settings Plugin settings to check if valid
 	* @since 1.0
-	* @return void
+	* @return boolean
 	*/
 	public function settings_are_valid ( $settings ) {
 
@@ -435,7 +441,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	* Get plugin settings
 	*
 	* @since 1.0
-	* @return void
+	* @return array|boolean
 	*/
 	public function get_plugin_settings () {
 
