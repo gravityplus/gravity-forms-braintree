@@ -250,7 +250,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 			if (!empty($thePlan)) {
 				$collection = Braintree\Customer::search([
-					Braintree\CustomerSearch::email()->is($args->email)
+					Braintree\CustomerSearch::email()->is($args['email'])
 				]);
 
 				if ($collection->maximumCount() > 0) {
