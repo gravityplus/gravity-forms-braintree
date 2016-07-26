@@ -281,13 +281,14 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 						$authorization['is_success'] = true;
 						$authorization['error_message'] = '';
-						$authorization['subscription_id'] = $subscriptionResult->subscription->_attributes['id'];
-						$authorization['amount'] = $subscriptionResult->subscription->_attributes['price'];
+						$authorization['subscription_id'] = $subscriptionResult->subscription->id;
+						$authorization['amount'] = $subscriptionResult->subscription->price;
 
 						$authorization['captured_payment'] = [
 							'is_success' => true,
-							'subscription_id' => $subscriptionResult->subscription->_attributes['id'],
-							'amount' => $subscriptionResult->subscription->_attributes['price'],
+							'subscription_id' => $subscriptionResult->subscription->id,
+							'transaction_id' => $subscriptionResult->subscription->transactions[0]->id,
+							'amount' => $subscriptionResult->subscription->price,
 							'error_message' => ''
 						];
 
