@@ -249,11 +249,24 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 			}
 
 			if (!empty($thePlan)) {
-				$result = Braintree\Customer::create($args);
+				$collection = Braintree\Customer::search([
+					Braintree\CustomerSearch::email()->is($args->email)
+				]);
+
+				if ($collection->maximumCount() > 0) {
+					foreach ($collection as $customer) {
+						$result = $customer;
+					}
+				} else {
+					$result = Braintree\Customer::create($args);
+				}
 
 				if (!empty($result)) {
+					if (get_class($result) != 'Braintree\Customer') {
+						$result = $result->customer;
+					}
 					$subscriptionResult = Braintree\Subscription::create([
-						'paymentMethodToken' => $result->customer->creditCards[0]->token,
+						'paymentMethodToken' => $result->creditCards[0]->token,
 						'planId' => $thePlan->id
 					]);
 
