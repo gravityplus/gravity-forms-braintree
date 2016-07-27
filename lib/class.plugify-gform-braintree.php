@@ -199,7 +199,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 		if( $settings = $this->get_plugin_settings() ) {
 
 			// Sanitize card number, removing dashes and spaces
-			$card_number = str_replace( array( '-', ' ' ), '', $submission_data['card_number'] );
+			$card_number = str_replace(array('-', ' '), '', $submission_data['card_number']);
 
 			// Prepare Braintree payload
 			$namePieces = explode(' ', $submission_data['card_name']);
@@ -213,7 +213,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 						'postalCode' => $submission_data['zip']
 					],
 					'number' => $card_number,
-					'expirationDate' => sprintf( '%s/%s', $submission_data['card_expiration_date'][0], $submission_data['card_expiration_date'][1]),
+					'expirationDate' => sprintf('%s/%s', $submission_data['card_expiration_date'][0], $submission_data['card_expiration_date'][1]),
 					'cardholderName' => $submission_data['card_name'],
 					'cvv' => $submission_data['card_security_code']
 				],
@@ -222,84 +222,88 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 				'firstName' => implode(' ', $namePieces)
 			];
 
-			// Configure Braintree environment
-			Braintree\Configuration::environment(strtolower($settings['environment']));
-			Braintree\Configuration::merchantId($settings['merchant-id']);
-			Braintree\Configuration::publicKey($settings['public-key']);
-			Braintree\Configuration::privateKey($settings['private-key']);
+			try {
+				// Configure Braintree environment
+				Braintree\Configuration::environment(strtolower($settings['environment']));
+				Braintree\Configuration::merchantId($settings['merchant-id']);
+				Braintree\Configuration::publicKey($settings['public-key']);
+				Braintree\Configuration::privateKey($settings['private-key']);
 
-			$plans = Braintree\Plan::all();
+				$plans = Braintree\Plan::all();
 
-			// See if there is a plan with a matching dollar value.
-			$thePlan = null;
-			if (count($plans) == 1) {
-				$thePlan = $plans[0];
-			} else if (count($plans) > 1) {
-				foreach ($plans as $plan) {
-					if ((float)$submission_data['payment_amount'] == (float)$plan->price) {
-						$thePlan = $plan;
-						break;
-					}
-				}
-				if (empty($thePlan)) {
+				// See if there is a plan with a matching dollar value.
+				$thePlan = null;
+				if (count($plans) == 1) {
 					$thePlan = $plans[0];
-				}
-			} else {
-				$authorization['error_message'] = apply_filters( 'gform_braintree_no_plans_failure_message', __( 'No subscription plans are available.', 'gravity-forms-braintree' ) );
-			}
-
-			if (!empty($thePlan)) {
-				$collection = Braintree\Customer::search([
-					Braintree\CustomerSearch::email()->is($args['email'])
-				]);
-
-				if ($collection->maximumCount() > 0) {
-					foreach ($collection as $customer) {
-						$result = $customer;
+				} else if (count($plans) > 1) {
+					foreach ($plans as $plan) {
+						if ((float)$submission_data['payment_amount'] == (float)$plan->price) {
+							$thePlan = $plan;
+							break;
+						}
+					}
+					if (empty($thePlan)) {
+						$thePlan = $plans[0];
 					}
 				} else {
-					$result = Braintree\Customer::create($args);
+					$authorization['error_message'] = apply_filters('gform_braintree_no_plans_failure_message', __('No subscription plans are available.', 'gravity-forms-braintree'));
 				}
 
-				if (!empty($result)) {
-					if (get_class($result) != 'Braintree\Customer') {
-						$result = $result->customer;
+				if (!empty($thePlan)) {
+					$collection = Braintree\Customer::search([
+						Braintree\CustomerSearch::email()->is($args['email'])
+					]);
+
+					if ($collection->maximumCount() > 0) {
+						foreach ($collection as $customer) {
+							$result = $customer;
+						}
+					} else {
+						$result = Braintree\Customer::create($args);
 					}
 
-					$subscription = [
-						'paymentMethodToken' => $result->creditCards[0]->token,
-						'planId' => $thePlan->id
-					];
+					if (!empty($result)) {
+						if (get_class($result) != 'Braintree\Customer') {
+							$result = $result->customer;
+						}
 
-					if ((float)$submission_data['payment_amount'] != (float)$plan->price) {
-						$subscription['price'] = (float)$submission_data['payment_amount'];
-					}
-
-					$subscriptionResult = Braintree\Subscription::create($subscription);
-
-					if( $subscriptionResult->success == true ) {
-
-						$authorization['is_success'] = true;
-						$authorization['error_message'] = '';
-						$authorization['subscription_id'] = $subscriptionResult->subscription->id;
-						$authorization['amount'] = $subscriptionResult->subscription->price;
-
-						$authorization['captured_payment'] = [
-							'is_success' => true,
-							'subscription_id' => $subscriptionResult->subscription->id,
-							'transaction_id' => $subscriptionResult->subscription->transactions[0]->id,
-							'amount' => $subscriptionResult->subscription->price,
-							'error_message' => ''
+						$subscription = [
+							'paymentMethodToken' => $result->creditCards[0]->token,
+							'planId' => $thePlan->id
 						];
 
+						if ((float)$submission_data['payment_amount'] != (float)$plan->price) {
+							$subscription['price'] = (float)$submission_data['payment_amount'];
+						}
+
+						$subscriptionResult = Braintree\Subscription::create($subscription);
+
+						if ($subscriptionResult->success == true) {
+
+							$authorization['is_success'] = true;
+							$authorization['error_message'] = '';
+							$authorization['subscription_id'] = $subscriptionResult->subscription->id;
+							$authorization['amount'] = $subscriptionResult->subscription->price;
+
+							$authorization['captured_payment'] = [
+								'is_success' => true,
+								'subscription_id' => $subscriptionResult->subscription->id,
+								'transaction_id' => $subscriptionResult->subscription->transactions[0]->id,
+								'amount' => $subscriptionResult->subscription->price,
+								'error_message' => ''
+							];
+
+						}
+					} else {
+						$authorization['error_message'] = apply_filters('gform_braintree_customer_create_failure_message', __('Failed to create a customer.', 'gravity-forms-braintree'));
 					}
 				} else {
-					$authorization['error_message'] = apply_filters( 'gform_braintree_customer_create_failure_message', __( 'Failed to create a customer.', 'gravity-forms-braintree' ) );
+					$authorization['error_message'] = apply_filters('gform_braintree_no_plan_message', __('No subscription plan found.', 'gravity-forms-braintree'));
 				}
-			} else {
-				$authorization['error_message'] = apply_filters( 'gform_braintree_no_plan_message', __( 'No subscription plan found.', 'gravity-forms-braintree' ) );
-			}
 
+			} catch (Exception $e) {
+				// Do nothing with exception object, just fallback to generic failure
+			}
 		}
 
 		return $authorization;
