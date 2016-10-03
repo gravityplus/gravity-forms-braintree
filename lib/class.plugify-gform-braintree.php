@@ -41,6 +41,14 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 	}
 
+	public function billing_info_fields() {
+		$default_settings = parent::billing_info_fields();
+
+		$default_settings[] = array( 'name' => 'first_bill_date', 'label' => __( 'First Billing Date', 'gravityforms' ), 'required' => false );
+
+		return $default_settings;
+	}
+
 	/**
 	 * After form has been submitted, send CC details to Braintree and ensure the card is going to work
 	 * If not, void the validation result (processed elsewhere) and have the submit the form again
@@ -277,6 +285,11 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 							'paymentMethodToken' => $result->creditCards[0]->token,
 							'planId' => $thePlan->id
 						];
+
+						if (!empty($submission_data['first_bill_date'])) {
+							$dateTime = new DateTime($submission_data['first_bill_date']);
+							$subscription['firstBillingDate'] = $dateTime;
+						}
 
 						if ((float)$submission_data['payment_amount'] != (float)$plan->price) {
 							$subscription['price'] = (float)$submission_data['payment_amount'];
