@@ -41,14 +41,6 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 	}
 
-	public function billing_info_fields() {
-		$default_settings = parent::billing_info_fields();
-
-		$default_settings[] = array( 'name' => 'first_bill_date', 'label' => __( 'First Billing Date', 'gravityforms' ), 'required' => false );
-
-		return $default_settings;
-	}
-
 	/**
 	 * After form has been submitted, send CC details to Braintree and ensure the card is going to work
 	 * If not, void the validation result (processed elsewhere) and have the submit the form again
@@ -339,9 +331,6 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 		// Get defaults from GFPaymentAddOn
 		$settings = parent::feed_settings_fields();
 
-		// Remove billing information
-		//$settings = $this->remove_field( 'billingInformation', $settings );
-
 		// Remove options
 		$settings = $this->remove_field( 'options', $settings );
 
@@ -353,6 +342,20 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 		// Return sanitized settings
 		return $settings;
 
+	}
+
+	/**
+	 * Update billing fields.
+	 *
+	 * @since 3.0.6
+	 * @return array
+	 */
+	public function billing_info_fields() {
+		$default_settings = parent::billing_info_fields();
+
+		$default_settings[] = array( 'name' => 'first_bill_date', 'label' => __( 'First Billing Date', 'gravityforms' ), 'required' => false );
+
+		return $default_settings;
 	}
 
 	/**
