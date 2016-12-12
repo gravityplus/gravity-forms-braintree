@@ -43,7 +43,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 	/**
 	* After form has been submitted, send CC details to Braintree and ensure the card is going to work
-	* If not, void the validation result (processed elsewhere) and have the submit the form again
+	* If not, void the validation result (processed elsewhere) and have them submit the form again
 	*
 	* @param $feed - Current configured payment feed
 	* @param $submission_data - Contains form field data submitted by the user as well as payment information (i.e. payment amount, setup fee, line items, etc...)
@@ -85,7 +85,22 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 			$card_number = str_replace( array( '-', ' ' ), '', $submission_data['card_number'] );
 
 			// Prepare Braintree payload
-			$args = array(
+            // Use filter gform_braintree_payload to modify the default payload
+            // Example:
+            //
+            // add_filter( 'gform_braintree_payload', 'example_callback', 10, 3 );
+            // function example_callback( $args, $entry, $form ) {
+            // // check for a field named "Email"
+            // foreach ( $form['fields'] as $field ) {
+            //     if ( 'Email' == $field->label ) {
+            //         $args['customer']['email'] = $entry[$field->id];
+            //     }
+            // }
+            // 
+            // return $args;
+            // }
+            //
+			$args = apply_filters( 'gform_braintree_payload', array(
 				'amount' => $submission_data['payment_amount'],
 				'creditCard' => array(
 					'number' => $card_number,
@@ -102,7 +117,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 					'locality' => $submission_data['city'],
 					'postalCode' => $submission_data['zip']
 					)
-			);
+			), $entry, $form );
 
 			try {
 
