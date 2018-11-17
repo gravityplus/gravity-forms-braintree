@@ -1,5 +1,7 @@
 <?php
-class Braintree_CreditCardVerification extends Braintree_Result_CreditCardVerification
+namespace Braintree;
+
+class CreditCardVerification extends Result\CreditCardVerification
 {
     public static function factory($attributes)
     {
@@ -7,35 +9,35 @@ class Braintree_CreditCardVerification extends Braintree_Result_CreditCardVerifi
         return $instance;
     }
 
+    // static methods redirecting to gateway
+    //
+    public static function create($attributes)
+    {
+        Util::verifyKeys(self::createSignature(), $attributes);
+        return Configuration::gateway()->creditCardVerification()->create($attributes);
+    }
+
     public static function fetch($query, $ids)
     {
-        $criteria = array();
-        foreach ($query as $term) {
-            $criteria[$term->name] = $term->toparam();
-        }
-        $criteria["ids"] = Braintree_CreditCardVerificationSearch::ids()->in($ids)->toparam();
-        $response = Braintree_Http::post('/verifications/advanced_search', array('search' => $criteria));
-
-        return Braintree_Util::extractattributeasarray(
-            $response['creditCardVerifications'],
-            'verification'
-        );
+        return Configuration::gateway()->creditCardVerification()->fetch($query, $ids);
     }
 
     public static function search($query)
     {
-        $criteria = array();
-        foreach ($query as $term) {
-            $criteria[$term->name] = $term->toparam();
-        }
+        return Configuration::gateway()->creditCardVerification()->search($query);
+    }
 
-        $response = Braintree_Http::post('/verifications/advanced_search_ids', array('search' => $criteria));
-        $pager = array(
-            'className' => __CLASS__,
-            'classMethod' => 'fetch',
-            'methodArgs' => array($query)
-            );
-
-        return new Braintree_ResourceCollection($response, $pager);
+    public static function createSignature()
+    {
+        return [
+                ['options' => ['amount', 'merchantAccountId']],
+                ['creditCard' =>
+                    [
+                        'cardholderName', 'cvv', 'number',
+                        'expirationDate', 'expirationMonth', 'expirationYear',
+                        ['billingAddress' => CreditCardGateway::billingAddressSignature()]
+                    ]
+                ]];
     }
 }
+class_alias('Braintree\CreditCardVerification', 'Braintree_CreditCardVerification');

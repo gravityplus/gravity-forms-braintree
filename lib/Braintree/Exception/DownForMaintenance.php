@@ -1,20 +1,16 @@
 <?php
-/**
- * Raised when the gateway is down for maintenance
- *
- * @package    Braintree
- * @subpackage Exception
- * @copyright  2010 Braintree Payment Solutions
- */
+namespace Braintree\Exception;
+
+use Braintree\Exception;
 
 /**
  * Raised when the gateway is down for maintenance.
  *
  * @package    Braintree
  * @subpackage Exception
- * @copyright  2010 Braintree Payment Solutions
  */
-class Braintree_Exception_DownForMaintenance extends Braintree_Exception
+class DownForMaintenance extends Exception
 {
 
 }
+class_alias('Braintree\Exception\DownForMaintenance', 'Braintree_Exception_DownForMaintenance');

@@ -1,10 +1,10 @@
 === Gravity Forms Braintree Add-On ===
-Contributors: Plugify, hello@lukerollans.me
+Contributors: Plugify, hello@lukerollans.me, gravityplus
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=hello%40plugify%2eio&lc=GB&item_name=Plugin%20Development%20Donation&currency_code=USD
 Tags: credit card,braintree,gravity form,payment
 Requires at least: 3.8
 Tested up to: 3.9
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,12 +54,14 @@ Not currently, no. This will be released very shortly in version 1.1
 No filters are currently available for this pre-release version
 
 == Screenshots ==
-1. You will be initially greeted with the empty feed page, prompting you to configure your Braintree settings.
-2. Page for configuring your Braintree settings, such as Merchant ID
-3. Configuring a Gravity Forms Braintree feed
-4. List of active feeds
+1. Easily configure your Braintree settings, allowing for quick and efficient setup.
+2. Quickly and easily configure payment feeds under Form Settings of any Gravity Form
+3. List of active feeds on the current form
 
 == Changelog ==
+
+= 1.1.2 =
+* Internal maintenance release. Version 1.2 is coming soon and it's going to be big!
 
 = 1.1.1 =
 * Dashes and spaces are now removed from credit card number before sending to Braintree
