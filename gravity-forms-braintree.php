@@ -1,12 +1,18 @@
 <?php
-/*
-Plugin Name: Gravity Forms Braintree Add-On
-Plugin URI: http://plugify.io/
-Description: Allow your customers to purchase goods and services through Gravity Forms via Braintree Payments
-Author: Plugify
-Version: 1.1.2
-Author URI: http://plugify.io
-*/
+/**
+ * Plugin Name: Gravity Forms Braintree Payments
+ * Plugin URI: https://angelleye.com/products/gravity-forms-braintree-payments
+ * Description: Allow your customers to purchase goods and services through Gravity Forms via Braintree Payments.
+ * Author: Angell EYE
+ * Version: 2.0.0
+ * Author URI: https://angelleye.com
+
+ *************
+ * Attribution
+ *************
+ * This plugin is a derivative work of the code from Plugify,
+ * which is licensed with GPLv2.
+ */
 
 // Ensure WordPress has been bootstrapped
 if( !defined( 'ABSPATH' ) ) {
@@ -31,5 +37,3 @@ if( is_callable( array( 'GFForms', 'include_payment_addon_framework' ) ) ) {
 	new Plugify_GForm_Braintree();
 
 }
-
-?>
