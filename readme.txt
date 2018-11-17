@@ -1,10 +1,10 @@
-=== Gravity Forms Braintree Add-On ===
-Contributors: Plugify, hello@lukerollans.me, gravityplus
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=hello%40plugify%2eio&lc=GB&item_name=Plugin%20Development%20Donation&currency_code=USD
-Tags: credit card,braintree,gravity form,payment
+=== Gravity Forms Braintree Payments ===
+Contributors: angelleye, Plugify, hello@lukerollans.me, gravityplus
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9CQZZGGMF78VY&source=url
+Tags: gravity form, gravity forms, credit card, credit cards, payment, payments, braintree
 Requires at least: 3.8
-Tested up to: 3.9
-Stable tag: 1.1.2
+Tested up to: 4.9.8
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,53 +12,59 @@ Allow your customers to purchase goods and services through Gravity Forms via Br
 
 == Description ==
 
-Braintree Payments is a payment gateway provider owned by eBAY Inc, which allows you to proces credit card payments without the need for a bank merchant account and full PCI-compliance. No sensitive data such as credit card numbers are stored on your server, Braintree takes care of everything.
+Braintree Payments is a payment gateway provider owned by PayPal which allows you to process credit card payments without the need for a bank merchant account and full PCI-compliance. No sensitive data such as credit card numbers are stored on your server, Braintree takes care of everything.
 
  > Requires at least WordPress 3.8 and Gravity Forms 1.8
 
 There are just a few simple steps to begin leveraging your Braintree Payments account:
 
-1. Install Gravity Forms Braintree Add-On
-2. Go to the Form Settings page for the form you wish to create a Braintree feed on
+1. Install Gravity Forms Braintree Payments.
+2. Go to the Form Settings page for the form you wish to create a Braintree feed on.
 3. You will be prompted to configure your Braintree settings. Click the link provided to do so.
 4. Once you have configured your Braintree settings, return to the Form Settings page and follow the prompts.
 
 = Features =
 
-* Seamlessly integrates your Gravity Forms credit card forms with Braintree Payments
-* Supports both production and sandbox environments, enabling you to test payments before going live
-* Form entries will only be created when payment is successful
-* Quick and easy setup
-
-If you have found this plugin useful, consider taking a moment to rate it, or perhaps even a small donation.
+* Seamlessly integrates your Gravity Forms credit card forms with Braintree Payments.
+* Supports both production and sandbox environments, enabling you to test payments before going live.
+* Form entries will only be created when payment is successful.
+* Quick and easy setup.
 
 == Installation ==
 
-1. Upload the `gravity-forms-braintree` folder to the `/wp-content/plugins/` directory.
-2. Activate the plugin through the 'Plugins' menu in WordPress.
-3. Navigate to the Form you wish to setup with a Braintree feed.
-4. Under Form Settings, choose the Braintree option.
+= Automatic installation =
+
+Automatic installation is the easiest option as WordPress handles the file transfers itself and you don't need to leave your web browser. To do an automatic install of Gravity Forms Braintree Payments, log in to your WordPress dashboard, navigate to the Plugins menu and click Add New.
+
+In the search field type Gravity Forms Braintree Payments and click Search Plugins. Once you've found our plugin (make sure it says "by Angell EYE") you can view details about it such as the the rating and description. Most importantly, of course, you can install it by simply clicking Install Now.
+
+= Manual Installation =
+
+1. Unzip the files and upload the folder into your plugins folder (/wp-content/plugins/) overwriting older versions if they exist
+2. Activate the plugin in your WordPress admin area.
+
+= Usage =
+
+1. Navigate to the Form you wish to setup with a Braintree feed.
+2. Under Form Settings, choose the Braintree option.
 
 == Frequently asked questions ==
 
 = What type of Braintree payments can be accepted? =
-For this early version, only one off payments can be accepted. Subscriptions will be available in version 1.1
-
-= Can I use conditional logic? EG, I only want to register a user if the Braintree payment was successful =
-In version 1.0, no. This is planned for version 1.2, coming very soon
+* For this early version, only one off payments can be accepted.
 
 = Does this plugin support Braintree subscriptions? =
-Not currently, no. This will be released very shortly in version 1.1
-
-= Available filters and actions =
-No filters are currently available for this pre-release version
+* Not yet.  This will be added based on future demand.
 
 == Screenshots ==
 1. Easily configure your Braintree settings, allowing for quick and efficient setup.
-2. Quickly and easily configure payment feeds under Form Settings of any Gravity Form
-3. List of active feeds on the current form
+2. Quickly and easily configure payment feeds under Form Settings of any Gravity Form.
+3. List of active feeds on the current form.
 
 == Changelog ==
+
+= 2.0.0 =
+* Fix - Updates Braintree Payments SDK and resolves failures with latest version of Gravity Forms. ([#1](https://github.com/angelleye/gravity-forms-braintree/issues/1))
 
 = 1.1.2 =
 * Internal maintenance release. Version 1.2 is coming soon and it's going to be big!
@@ -86,4 +92,5 @@ No filters are currently available for this pre-release version
 
 == Upgrade notice ==
 
-IMPORTANT! Version 1.0 is a complete overhaul from the previous version. Your existing feeds will not work. Please make sure you check all your feeds and ensure they function correctly.
+= 2.0.0 =
+This is a forked version of the original Gravity Forms Braintree Add-On by Plugify.  It has been updated to work with the latest version of Braintree and Gravity Forms, and will be maintained.
