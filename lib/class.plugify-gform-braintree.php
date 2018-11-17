@@ -61,7 +61,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	* @since 1.0
 	* @return void
 	*/
-	protected function authorize( $feed, $submission_data, $form, $entry ) {
+	public function authorize( $feed, $submission_data, $form, $entry ) {
 
 		// Prepare authorization response payload
 		$authorization = array(
@@ -75,7 +75,6 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 				'amount' => $submission_data['payment_amount']
 			)
 		);
-
 
 		// Perform capture in this function. For this version, we won't authorize and then capture later
 		// at least, not in this version
@@ -110,18 +109,17 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 				// Send transaction to Braintree
 				$result = Braintree_Transaction::sale( $args );
-
+                $this->log_debug( "Braintree_Transaction::sale RESPONSE => " . print_r( $result, 1 ) );
 				// Update response to reflect successful payment
 				if( $result->success == '1' ) {
-
 					$authorization['is_authorized'] = true;
 					$authorization['error_message'] = '';
-					$authorization['transaction_id'] = $result->transaction->_attributes['id'];
+					$authorization['transaction_id'] = $result->transaction->id;
 
 					$authorization['captured_payment'] = array(
 						'is_success' => true,
-						'transaction_id' => $result->transaction->_attributes['id'],
-						'amount' => $result->transaction->_attributes['amount'],
+						'transaction_id' => $result->transaction->id,
+						'amount' => $result->transaction->amount,
 						'error_message' => '',
 						'payment_method' => 'Credit Card'
 					);
@@ -131,8 +129,8 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 					// Append gateway response text to error message if it exists. If it doesn't exist, a more hardcore
 					// failure has occured and it won't do the user any good to see it other than a general error message
-					if( isset( $result->_attributes['transaction']->_attributes['processorResponseText'] ) ) {
-						$authorization['error_message'] .= sprintf( '. Your bank said: %s.', $result->_attributes['transaction']->_attributes['processorResponseText'] );
+					if( isset( $result->transaction->processorResponseText ) ) {
+						$authorization['error_message'] .= sprintf( '. Your bank said: %s.', $result->transaction->processorResponseText);
 					}
 
 				}
