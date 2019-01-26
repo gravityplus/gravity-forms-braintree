@@ -123,6 +123,10 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 					$args['options']['submitForSettlement'] = 'true';
 				}
 
+				if ($feed['meta']['taxExempt'] == 1) {
+					$args['options']['taxExempt'] = 'true';
+				}
+
 				// Send transaction to Braintree
 				$result = Braintree\Transaction::sale( $args );
 
@@ -334,10 +338,25 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 		// Remove options
 		$settings = $this->remove_field( 'options', $settings );
 
-		// Remove the subscription option from transaction type dropdown
 		$transaction_type = $this->get_field( 'transactionType', $settings );
 
 		$settings = $this->replace_field( 'transactionType', $transaction_type, $settings );
+
+		// Add tax exempt field to feed settings.
+		$fields = array(
+            array(
+                'label'   => 'Tax Exempt',
+                'type'    => 'checkbox',
+                'name'    => 'taxExempt',
+                'choices' => array(
+                    array(
+                        'label' => 'Enabled',
+                        'name'  => 'taxExempt'
+                    )
+                )
+            )
+        );
+		$settings = $this->add_field_after( 'transactionType', $fields, $settings );
 
 		// Return sanitized settings
 		return $settings;
