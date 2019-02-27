@@ -3,7 +3,7 @@ Contributors: angelleye, Plugify, hello@lukerollans.me, gravityplus
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9CQZZGGMF78VY&source=url
 Tags: gravity form, gravity forms, credit card, credit cards, payment, payments, braintree
 Requires at least: 3.8
-Tested up to: 5.0.3
+Tested up to: 5.1
 Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -57,9 +57,10 @@ In the search field type Gravity Forms Braintree Payments and click Search Plugi
 * Not yet.  This will be added based on future demand.
 
 == Screenshots ==
-1. Easily configure your Braintree settings, allowing for quick and efficient setup.
-2. Quickly and easily configure payment feeds under Form Settings of any Gravity Form.
-3. List of active feeds on the current form.
+1. Drop a credit card field collection directly into any Gravity Form.
+2. Easily configure your Braintree settings, allowing for quick and efficient setup.
+3. Quickly and easily configure payment feeds under Form Settings of any Gravity Form.
+4. List of active feeds on the current form.
 
 == Changelog ==
 
