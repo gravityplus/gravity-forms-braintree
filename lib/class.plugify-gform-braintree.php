@@ -118,7 +118,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 				Braintree\Configuration::publicKey( $settings['public-key'] );
 				Braintree\Configuration::privateKey( $settings['private-key'] );
 
-				// Set to auto settlemt if applicable
+				// Set to auto settlement if applicable
 				if( $settings['settlement'] == 'Yes' ) {
 					$args['options']['submitForSettlement'] = 'true';
 				}
@@ -126,9 +126,11 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 				if ($feed['meta']['taxExempt'] == 1) {
 					$args['options']['taxExempt'] = 'true';
 				}
+				GFCommon::log_debug('Braintree Transaction Args: ' . print_r( $args, true ));
 
 				// Send transaction to Braintree
 				$result = Braintree\Transaction::sale( $args );
+				GFCommon::log_debug('Braintree Transaction Sale Result: ' . print_r( $result, true ));
 
 				// Update response to reflect successful payment
 				if( $result->success == '1' ) {
