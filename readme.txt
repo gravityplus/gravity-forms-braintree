@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=hello
 Tags: credit card,braintree,gravity form,payment
 Requires at least: 3.8
 Tested up to: 4.5
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,6 +60,9 @@ No filters are currently available for this pre-release version
 4. List of active feeds
 
 == Changelog ==
+
+= 1.3.0 =
+* Update Braintree SDK files to 3.39.0 version.
 
 = 1.2.0 =
 * Update Braintree SDK files to the latest version.
