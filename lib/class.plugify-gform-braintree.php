@@ -124,7 +124,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 				}
 
 				if ($feed['meta']['taxExempt'] == 1) {
-					$args['options']['taxExempt'] = 'true';
+					$args['taxExempt'] = 'true';
 				}
 				GFCommon::log_debug('Braintree Transaction Args: ' . print_r( $args, true ));
 
@@ -160,7 +160,8 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 			}
 			catch( Exception $e ) {
-				// Do nothing with exception object, just fallback to generic failure
+				// Log exception object message, then fallback to generic failure
+				GFCommon::log_debug('Braintree Exception: ' . print_r( $e->getMessage(), true ));
 			}
 
 			return $authorization;
