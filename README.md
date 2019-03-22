@@ -17,6 +17,8 @@ Braintree Payments is a payment gateway provider owned by eBAY Inc, which allows
 * Supports both production and sandbox environments, enabling you to test payments before going live
 * Form entries will only be created when payment is successful
 * Quick and easy setup
+* Tax Exempt form feed setting for non-profits
+* Advanced Fraud Prevention integration
 
 ## Subscriptions
 

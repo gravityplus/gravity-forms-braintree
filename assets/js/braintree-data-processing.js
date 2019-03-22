@@ -1,3 +1,8 @@
+/**
+ * Used for Advanced Fraud Tools integration.
+ *
+ * @since 1.4.0
+ */
 jQuery( function($) {
     braintree.client.create({
         authorization: braintree_data_processing_strings.bt_magic
@@ -13,7 +18,7 @@ jQuery( function($) {
                 // Handle error in data collector creation
                 return;
             }
-            var deviceDataInput = jQuery(".ginput_card_expiration_year").parents('form').find('input[type=hidden]').first();
+            var deviceDataInput = jQuery("[name=" + braintree_data_processing_strings.bt_field + "]");
 
             if (deviceDataInput == null) {
                 deviceDataInput = document.createElement('input');

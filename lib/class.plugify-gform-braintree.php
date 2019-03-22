@@ -4,7 +4,7 @@
 
 final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
-	protected $_version = '1.3.2';
+	protected $_version = '1.4.0';
 
 	protected $_min_gravityforms_version = '2.0.3';
 	protected $_slug = 'gravity-forms-braintree';
@@ -41,46 +41,49 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 	}
 
+	/**
+	 * Enqueue scripts.
+	 *
+	 * @since 1.4.0
+	 * @return array
+	 */
 	public function scripts() {
 		$scripts = [];
 
 		if( $settings = $this->get_plugin_settings() ) {
-			//$enableAFT = $this->get_setting('enableAFT');
-			//GFCommon::log_debug('Braintree setting: ' . print_r($enableAFT, true));
-			//if ($enableAFT == 1) {/* check that enableAFT is 1 */
-				$scripts = [
-					[
-						'handle'  => 'braintree_client',
-						'src'     => 'https://js.braintreegateway.com/web/3.43.0/js/client.min.js',
-						'version' => $this->_version,
-						'deps'    => [],
-						'enqueue' => [
-							[$this, 'aft_enabled']
-						]
+			$scripts = [
+				[
+					'handle'  => 'braintree_client',
+					'src'     => 'https://js.braintreegateway.com/web/3.43.0/js/client.min.js',
+					'version' => $this->_version,
+					'deps'    => [],
+					'enqueue' => [
+						[$this, 'aft_enabled']
+					]
+				],
+				[
+					'handle'  => 'braintree_data_collector',
+					'src'     => 'https://js.braintreegateway.com/web/3.43.0/js/data-collector.min.js',
+					'version' => $this->_version,
+					'deps'    => [],
+					'enqueue' => [
+						[$this, 'aft_enabled']
+					]
+				],
+				[
+					'handle'  => 'braintree_data_processing',
+					'src'     => $this->get_base_url() . '/../assets/js/braintree-data-processing.js',
+					'version' => $this->_version,
+					'deps'    => ['jquery'],
+					'strings' => [
+						'bt_magic' => $settings['tokenization-key'],
+						'bt_field' => $this->get_device_data_field_value()
 					],
-					[
-						'handle'  => 'braintree_data_collector',
-						'src'     => 'https://js.braintreegateway.com/web/3.43.0/js/data-collector.min.js',
-						'version' => $this->_version,
-						'deps'    => [],
-						'enqueue' => [
-							[$this, 'aft_enabled']
-						]
-					],
-					[
-						'handle'  => 'braintree_data_processing',
-						'src'     => $this->get_base_url() . '/../assets/js/braintree-data-processing.js',
-						'version' => $this->_version,
-						'deps'    => [],
-						'strings' => [
-							'bt_magic' => $settings['tokenization-key']
-						],
-						'enqueue' => [
-							[$this, 'aft_enabled']
-						]
-					],
-				];
-			//}
+					'enqueue' => [
+						[$this, 'aft_enabled']
+					]
+				],
+			];
 		}
 
 		return array_merge(parent::scripts(), $scripts);
@@ -230,6 +233,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	 * @param $form - Current form array containing all form settings
 	 * @param $entry - Current entry array containing entry information (i.e data submitted by users). NOTE: the entry hasn't been saved to the database at this point, so this $entry object does not have the 'ID' property and is only a memory representation of the entry.
 	 *
+	 * @since 1.2.0
 	 * @return array - Return an $subscription array in the following format:
 	 * [
 	 *  'is_success'=>true|false,
@@ -435,7 +439,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	/**
 	 * Update billing fields.
 	 *
-	 * @since 3.0.6
+	 * @since 1.2.1
 	 * @return array
 	 */
 	public function billing_info_fields() {
@@ -447,6 +451,13 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 		return $default_settings;
 	}
 
+	/**
+	 * Check if the enableAFT box is checked for script enqueueing.
+	 *
+	 * @param $form
+	 * @since 1.4.0
+	 * @return bool
+	 */
 	public function aft_enabled( $form ) {
 		if ($form && $this->has_feed( $form['id'] )) {
 			$feed = $this->get_feed($form['id']);
@@ -455,6 +466,17 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Get the name of the device data field.
+	 *
+	 * @since 1.4.0
+	 * @return string
+	 */
+	public function get_device_data_field_value(  ) {
+		// @todo Need to get the setting of the field name that device_data is set to.
+		return 'input_11';
 	}
 
 	/**
