@@ -19,6 +19,11 @@ if( !defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+if (!defined('AEU_ZIP_URL')) {
+    define('AEU_ZIP_URL', 'https://github.com/angelleye/angelleye-updater/archive/master.zip');
+}
+
+
 $path = trailingslashit( dirname( __FILE__ ) );
 
 // Ensure Gravity Forms (payment addon framework) is installed and good to go
@@ -33,6 +38,13 @@ if( is_callable( array( 'GFForms', 'include_payment_addon_framework' ) ) ) {
 	// Require plugin entry point
 	require_once $path . 'lib/class.plugify-gform-braintree.php';
 
+    /**
+     * Required functions
+     */
+    if (!function_exists('angelleye_queue_update')) {
+        require_once( 'includes/angelleye-functions.php' );
+    }
+    
 	// Fire off entry point
 	new Plugify_GForm_Braintree();
 
