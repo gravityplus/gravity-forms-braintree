@@ -64,6 +64,9 @@ In the search field type Gravity Forms Braintree Payments and click Search Plugi
 
 == Changelog ==
 
+= 2.0.1 =
+* Feature - Adds AE Updater compatibility for future notices and automated updates. [GFB-4]
+
 = 2.0.0 =
 * Fix - Updates Braintree Payments SDK and resolves failures with latest version of Gravity Forms. ([#1](https://github.com/angelleye/gravity-forms-braintree/issues/1))
 
