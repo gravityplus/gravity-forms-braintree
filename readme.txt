@@ -3,8 +3,8 @@ Contributors: angelleye, Plugify, hello@lukerollans.me, gravityplus
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9CQZZGGMF78VY&source=url
 Tags: gravity form, gravity forms, credit card, credit cards, payment, payments, braintree
 Requires at least: 3.8
-Tested up to: 5.1
-Stable tag: 2.0.0
+Tested up to: 5.1.1
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -64,7 +64,7 @@ In the search field type Gravity Forms Braintree Payments and click Search Plugi
 
 == Changelog ==
 
-= 2.0.1 =
+= 2.1.0 =
 * Feature - Adds AE Updater compatibility for future notices and automated updates. [GFB-4] ([GFB-5](https://github.com/angelleye/gravity-forms-braintree/pull/8))
 
 = 2.0.0 =
