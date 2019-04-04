@@ -65,7 +65,7 @@ In the search field type Gravity Forms Braintree Payments and click Search Plugi
 == Changelog ==
 
 = 2.0.1 =
-* Feature - Adds AE Updater compatibility for future notices and automated updates. [GFB-4]
+* Feature - Adds AE Updater compatibility for future notices and automated updates. [GFB-4] ([GFB-5](https://github.com/angelleye/gravity-forms-braintree/pull/8))
 
 = 2.0.0 =
 * Fix - Updates Braintree Payments SDK and resolves failures with latest version of Gravity Forms. ([#1](https://github.com/angelleye/gravity-forms-braintree/issues/1))
@@ -93,8 +93,3 @@ In the search field type Gravity Forms Braintree Payments and click Search Plugi
 
 = 0.1 =
 * Initial version of the plugin
-
-== Upgrade notice ==
-
-= 2.0.0 =
-This is a forked version of the original Gravity Forms Braintree Add-On by Plugify.  It has been updated to work with the latest version of Braintree and Gravity Forms, and will be maintained.
