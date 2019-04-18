@@ -6,6 +6,7 @@
  * Author: Angell EYE
  * Version: 2.1.0
  * Author URI: https://angelleye.com
+ * Text Domain: angelleye-gravity-forms-braintree
 
  *************
  * Attribution
