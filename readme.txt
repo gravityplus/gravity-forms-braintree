@@ -64,6 +64,9 @@ In the search field type Gravity Forms Braintree Payments and click Search Plugi
 
 == Changelog ==
 
+= 2.1.1 - xx.xx.2019 =
+* Tweak - Adds text domain. ([GFB-7](https://github.com/angelleye/gravity-forms-braintree/pull/9))
+
 = 2.1.0 =
 * Feature - Adds AE Updater compatibility for future notices and automated updates. [GFB-4] ([GFB-5](https://github.com/angelleye/gravity-forms-braintree/pull/8))
 
