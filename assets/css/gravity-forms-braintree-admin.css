@@ -1,20 +1,3 @@
-/* !- gravity forms braintree styles */
-#gform-braintree-loader {
-  padding: 2px 0 0 2px;
-}
-
-table.feeds th#is_active {
-  width: 50px;
-}
-
-table.feeds th#id {
-  width: 100px;
-}
-
-body {
-  display: none;
-}
-
 .notice.notice-success.angelleye-notice {
     padding: 0 !important;
     margin: 5px 0 10px;
@@ -88,3 +71,4 @@ body {
     color: #C5C5C5;
     -webkit-font-smoothing: antialiased;
 }
+
