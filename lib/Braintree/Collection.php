@@ -1,16 +1,16 @@
 <?php
+namespace Braintree;
+
+use Countable;
+use IteratorAggregate;
+use ArrayAccess;
+use OutOfRangeException;
+use ArrayIterator;
+
 /**
  * Braintree Generic collection
  *
  * PHP Version 5
- *
- * @package   Braintree
- * @subpackage Utility
- * @copyright 2010 Braintree Payment Solutions
- */
-
-/**
- * Generic Collection class
  *
  * Based on Generic Collection class from:
  * {@link http://codeutopia.net/code/library/CU/Collection.php}
@@ -18,13 +18,14 @@
  * @package   Braintree
  * @subpackage Utility
  */
-class Braintree_Collection implements Countable, IteratorAggregate, ArrayAccess
+
+class Collection implements Countable, IteratorAggregate, ArrayAccess
 {
     /**
      *
-     * @var array $_collection collection storage
+     * @var array collection storage
      */
-    protected $_collection = array();
+    protected $_collection = [];
 
     /**
      * Add a value into the collection
@@ -157,3 +158,4 @@ class Braintree_Collection implements Countable, IteratorAggregate, ArrayAccess
     }
 
 }
+class_alias('Braintree\Collection', 'Braintree_Collection');
