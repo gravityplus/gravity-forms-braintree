@@ -93,7 +93,6 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 			// Prepare Braintree payload
 			$args = array(
 				'amount' => $submission_data['payment_amount'],
-				'channel' => 'AngellEYEPayPalforWoo_BT',
 				'creditCard' => array(
 					'number' => $card_number,
 					'expirationDate' => sprintf( '%s/%s', $submission_data['card_expiration_date'][0], $submission_data['card_expiration_date'][1]),
