@@ -46,7 +46,7 @@ if( is_callable( array( 'GFForms', 'include_payment_addon_framework' ) ) ) {
 
 	// Require plugin entry point
 	require_once $path . 'lib/class.plugify-gform-braintree.php';
-        require_once $path . 'lib/angelleye-gravity-forms-payment-logger';
+        require_once $path . 'lib/angelleye-gravity-forms-payment-logger.php';
 
     /**
      * Required functions
