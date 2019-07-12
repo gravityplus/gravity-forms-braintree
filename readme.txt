@@ -64,6 +64,9 @@ In the search field type Gravity Forms Braintree Payments and click Search Plugi
 
 == Changelog ==
 
+= 2.1.3 - XX.XX.2019 =
+* Tweak - Update push notification system sync interval time. ([GFB-9](https://github.com/angelleye/gravity-forms-braintree/pull/11)) 
+
 = 2.1.2 - 07.09.2019 =
 * Tweak - Minor adjustments to API request.
 
