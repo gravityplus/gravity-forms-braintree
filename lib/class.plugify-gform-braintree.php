@@ -119,6 +119,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
                 $this->log_debug( "Braintree_Transaction::sale RESPONSE => " . print_r( $result, 1 ) );
 				// Update response to reflect successful payment
 				if( $result->success == '1' ) {
+                                        do_action('angelleye_gravity_forms_response_data', $result, $submission_data, '17', ($settings['environment'] == 'Sandbox') ? true : false , false, 'braintree');
 					$authorization['is_authorized'] = true;
 					$authorization['error_message'] = '';
 					$authorization['transaction_id'] = $result->transaction->id;
@@ -316,7 +317,12 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
     public function angelleye_gform_braintree_display_push_notification() {
         global $current_user;
         $user_id = $current_user->ID;
+        if (false === ( $response = get_transient('angelleye_push_notification_result') )) {
         $response = $this->angelleye_get_push_notifications();
+        if (is_object($response)) {
+                set_transient('angelleye_push_notification_result', $response, 12 * HOUR_IN_SECONDS);
+            }
+        }
         if (is_object($response)) {
             foreach ($response->data as $key => $response_data) {
                 if (!get_user_meta($user_id, $response_data->id)) {
