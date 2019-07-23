@@ -317,10 +317,10 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
     public function angelleye_gform_braintree_display_push_notification() {
         global $current_user;
         $user_id = $current_user->ID;
-        if (false === ( $response = get_transient('angelleye_push_notification_result') )) {
-        $response = $this->angelleye_get_push_notifications();
-        if (is_object($response)) {
-                set_transient('angelleye_push_notification_result', $response, 12 * HOUR_IN_SECONDS);
+        if (false === ( $response = get_transient('angelleye_gravity_braintree_push_notification_result') )) {
+            $response = $this->angelleye_get_push_notifications();
+            if(is_object($response)) {
+                set_transient('angelleye_gravity_braintree_push_notification_result', $response, 12 * HOUR_IN_SECONDS);
             }
         }
         if (is_object($response)) {
