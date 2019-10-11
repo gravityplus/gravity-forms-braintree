@@ -23,16 +23,13 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	*/
 	public function __construct () {
 
-                add_action('wp_ajax_angelleye_gform_braintree_adismiss_notice', array($this, 'angelleye_gform_braintree_adismiss_notice'), 10);
-                add_action('admin_notices', array($this, 'angelleye_gform_braintree_display_push_notification'), 10);
-                
-                add_action('admin_enqueue_scripts', array($this, 'enqueue_styles_css'), 10);
-                add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts_js'), 10);
+        add_action('wp_ajax_angelleye_gform_braintree_adismiss_notice', array($this, 'angelleye_gform_braintree_adismiss_notice'), 10);
+        add_action('admin_notices', array($this, 'angelleye_gform_braintree_display_push_notification'), 10);
+
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_styles_css'), 10);
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts_js'), 10);
 		// Build parent
 		parent::__construct();
-                
-                
-
 	}
 
 	/**
@@ -101,6 +98,8 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 				)
 			);
 
+            $args = apply_filters('angelleye_braintree_parameter', $args, $submission_data, $form, $entry);
+
 			try {
 
 				// Configure Braintree environment
@@ -116,6 +115,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 				// Send transaction to Braintree
 				$result = Braintree_Transaction::sale( $args );
+
                 $this->log_debug( "Braintree_Transaction::sale RESPONSE => " . print_r( $result, 1 ) );
 				// Update response to reflect successful payment
 				if( $result->success == '1' ) {
