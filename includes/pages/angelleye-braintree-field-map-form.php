@@ -9,10 +9,10 @@ $braintree_fields = [
         'extendedAddress'       => 'Apartment or Suite Number',
         'firstName'             => 'First Name',
         'lastName'              => 'Last Name',
+        'streetAddress'         => 'Street Address',
         'locality'              => 'Locality/City',
         'postalCode'            => 'Postal Code',
         'region'                => 'State/Province',
-        'streetAddress'         => 'Street Address',
     ],
     'shipping' => [
         'company' => 'Company Name',
@@ -23,10 +23,10 @@ $braintree_fields = [
         'extendedAddress'       => 'Apartment or Suite Number',
         'firstName'             => 'First Name',
         'lastName'              => 'Last Name',
+        'streetAddress'         => 'Street Address',
         'locality'              => 'Locality/City',
         'postalCode'            => 'Postal Code',
         'region'                => 'State/Province',
-        'streetAddress'         => 'Street Address',
     ],
     //'customFields'              => 'Custom Fields (Defined in your account)',
     'customer' => [
@@ -68,7 +68,11 @@ $final_gravity_fields = [];
 foreach ($gravity_fields as $gravity_field) {
     if(in_array($gravity_field->type, $ignore_type_fields))
         continue;
-    $final_gravity_fields[$gravity_field['id']] = $gravity_field['label'];
+    if(is_array($gravity_field['inputs']) && count($gravity_field['inputs'])){
+        foreach ($gravity_field['inputs'] as $single_input)
+            $final_gravity_fields[$single_input['id']] = $single_input['label'].' ('.$gravity_field['label'].')';
+    }else
+        $final_gravity_fields[$gravity_field['id']] = $gravity_field['label'];
 }
 //print_r($gravity_fields);
 ?>
