@@ -33,28 +33,56 @@ if (!defined('PAYPAL_FOR_WOOCOMMERCE_PUSH_NOTIFICATION_WEB_URL')) {
 }
 
 
-$path = trailingslashit( dirname( __FILE__ ) );
-
-// Ensure Gravity Forms (payment addon framework) is installed and good to go
-if( is_callable( array( 'GFForms', 'include_payment_addon_framework' ) ) ) {
-
-	// Bootstrap payment addon framework
-	GFForms::include_payment_addon_framework();
-
-	// Require Braintree Payments core
-	require_once $path . 'lib/Braintree.php';
-
-	// Require plugin entry point
-	require_once $path . 'lib/class.plugify-gform-braintree.php';
-
-    /**
-     * Required functions
-     */
-    if (!function_exists('angelleye_queue_update')) {
-        require_once( 'includes/angelleye-functions.php' );
-    }
+class AngelleyeGravityFormsBraintree{
     
-	// Fire off entry point
-	new Plugify_GForm_Braintree();
+    protected static $instance = null;
+    public static $plugin_base_file;
+    
+    public static function getInstance()
+    {
+        self::$plugin_base_file = plugin_basename(__FILE__);
+        if(self::$instance==null)
+            self::$instance = new AngelleyeGravityFormsBraintree();
+        
+        return self::$instance;
+    }
 
+    public function __construct()
+    {
+        $this->init();
+    }
+
+    public function init()
+    {
+        $path = trailingslashit( dirname( __FILE__ ) );
+
+        // Ensure Gravity Forms (payment addon framework) is installed and good to go
+        if( is_callable( array( 'GFForms', 'include_payment_addon_framework' ) ) ) {
+
+            // Bootstrap payment addon framework
+            GFForms::include_payment_addon_framework();
+
+            // Require Braintree Payments core
+            require_once $path . 'lib/Braintree.php';
+
+            // Require plugin entry point
+            require_once $path . 'lib/class.plugify-gform-braintree.php';
+
+            require_once $path . 'includes/angelleye-gravity-braintree-field-mapping.php';
+
+            /**
+             * Required functions
+             */
+            if (!function_exists('angelleye_queue_update')) {
+                require_once( 'includes/angelleye-functions.php' );
+            }
+
+            // Fire off entry point
+            new Plugify_GForm_Braintree();
+            new AngelleyeGravityBraintreeFieldMapping();
+
+        }
+    }
 }
+
+AngelleyeGravityFormsBraintree::getInstance();
