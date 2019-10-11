@@ -68,7 +68,7 @@ class AngellEYE_GForm_Braintree_Payment_Logger {
             $status = $request_param['status'];
             $site_url = $request_param['site_url'];
             $payment_mode = $request_param['mode'];
-            $merchant_id = $request_param['merchant_id'];
+            $merchant_id = @$request_param['merchant_id'];
             $correlation_id = $request_param['correlation_id'];
             $transaction_id = $request_param['transaction_id'];
             $product_id = $request_param['product_id'];
