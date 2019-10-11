@@ -46,7 +46,7 @@ class AngellEYE_GForm_Braintree_Payment_Logger {
                     } else {
                         $request_param['status'] = 'Failure';
                     }
-                    if ($opt_in == 'yes') {
+                    if ($opt_in_log == 'yes') {
                         if (isset($result->transaction->statusHistory[0]->user) && !empty($result->transaction->statusHistory[0]->user)) {
                             $request_param['merchant_id'] = $result->transaction->statusHistory[0]->user;
                         }

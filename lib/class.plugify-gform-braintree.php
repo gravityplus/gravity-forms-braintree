@@ -119,7 +119,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
                 $this->log_debug( "Braintree_Transaction::sale RESPONSE => " . print_r( $result, 1 ) );
 				// Update response to reflect successful payment
 				if( $result->success == '1' ) {
-                                        do_action('angelleye_gravity_forms_response_data', $$result, $submission_data, '1', ($settings['environment'] == 'sandbox') ? true : false , false, 'braintree');
+                    do_action('angelleye_gravity_forms_response_data', $result, $submission_data, '1', ($settings['environment'] == 'sandbox') ? true : false , false, 'braintree');
 					$authorization['is_authorized'] = true;
 					$authorization['error_message'] = '';
 					$authorization['transaction_id'] = $result->transaction->id;
