@@ -2,9 +2,9 @@
 $braintree_fields = [
     'billing' => [
         'company' => 'Company Name',
-        'countryCodeAlpha2'     => 'Country Code (e.g US)',
+        /*'countryCodeAlpha2'     => 'Country Code (e.g US)',
         'countryCodeAlpha3'     => 'Country Code (e.g. USA)',
-        'countryCodeNumeric'    => 'Country Code (e.g. +1)',
+        'countryCodeNumeric'    => 'Country Code (e.g. +1)',*/
         'countryName'           => 'Country Name',
         'extendedAddress'       => 'Apartment or Suite Number',
         'firstName'             => 'First Name',
@@ -16,9 +16,9 @@ $braintree_fields = [
     ],
     'shipping' => [
         'company' => 'Company Name',
-        'countryCodeAlpha2'     => 'Country Code (e.g US)',
+        /*'countryCodeAlpha2'     => 'Country Code (e.g US)',
         'countryCodeAlpha3'     => 'Country Code (e.g. USA)',
-        'countryCodeNumeric'    => 'Country Code (e.g. +1)',
+        'countryCodeNumeric'    => 'Country Code (e.g. +1)',*/
         'countryName'           => 'Country Name',
         'extendedAddress'       => 'Apartment or Suite Number',
         'firstName'             => 'First Name',
@@ -139,7 +139,7 @@ foreach ($gravity_fields as $gravity_field) {
             <?php
         } ?>
         <tr><td colspan="2">
-                <button class="button button-primary">Update Mapping</button>
+                <button class="button button-primary updatemappingbtn">Update Mapping</button>
                 <div class="successful_message"></div>
             </td></tr>
         </tbody>
