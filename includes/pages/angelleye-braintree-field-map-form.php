@@ -1,39 +1,39 @@
 <?php
 $braintree_fields = [
     'billing' => [
-        'company' => 'Company Name',
+        'firstName'             => 'First Name',
+        'lastName'              => 'Last Name',
+        'company'               => 'Company Name',
         /*'countryCodeAlpha2'     => 'Country Code (e.g US)',
         'countryCodeAlpha3'     => 'Country Code (e.g. USA)',
         'countryCodeNumeric'    => 'Country Code (e.g. +1)',*/
-        'countryName'           => 'Country Name',
-        'extendedAddress'       => 'Apartment or Suite Number',
-        'firstName'             => 'First Name',
-        'lastName'              => 'Last Name',
         'streetAddress'         => 'Street Address',
+        'extendedAddress'       => 'Street Address 2 (Apartment or Suite Number)',
         'locality'              => 'Locality/City',
-        'postalCode'            => 'Postal Code',
         'region'                => 'State/Province',
+        'postalCode'            => 'Postal Code',
+        'countryName'           => 'Country Name',
     ],
     'shipping' => [
-        'company' => 'Company Name',
+        'firstName'             => 'First Name',
+        'lastName'              => 'Last Name',
+        'company'               => 'Company Name',
         /*'countryCodeAlpha2'     => 'Country Code (e.g US)',
         'countryCodeAlpha3'     => 'Country Code (e.g. USA)',
         'countryCodeNumeric'    => 'Country Code (e.g. +1)',*/
-        'countryName'           => 'Country Name',
-        'extendedAddress'       => 'Apartment or Suite Number',
-        'firstName'             => 'First Name',
-        'lastName'              => 'Last Name',
         'streetAddress'         => 'Street Address',
+        'extendedAddress'       => 'Street Address 2 (Apartment or Suite Number)',
         'locality'              => 'Locality/City',
-        'postalCode'            => 'Postal Code',
         'region'                => 'State/Province',
+        'postalCode'            => 'Postal Code',
+        'countryName'           => 'Country Name',
     ],
     //'customFields'              => 'Custom Fields (Defined in your account)',
     'customer' => [
-        'company'               => 'Company Name',
-        'email'                 => 'Email',
         'firstName'             => 'First Name',
         'lastName'              => 'Last Name',
+        'company'               => 'Company Name',
+        'email'                 => 'Email',
         'phone'                 => 'Phone',
         'website'               => 'Website URL'
     ]
