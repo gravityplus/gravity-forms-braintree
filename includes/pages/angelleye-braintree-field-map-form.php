@@ -76,7 +76,7 @@ foreach ($gravity_fields as $gravity_field) {
 }
 //print_r($gravity_fields);
 ?>
-<h3><span><i class="fa fa-cogs"></i> Braintree field Mapping</span></h3>
+<h3><span><i class="fa fa-cogs"></i> Braintree Field Mapping</span></h3>
 
 <?php
 if(!AngelleyeGravityFormsBraintree::isBraintreeFeedActive()) {
@@ -90,8 +90,11 @@ if(!AngelleyeGravityFormsBraintree::isBraintreeFeedActive()) {
 }?>
 
 <p>
-    Please map the gravity form fields with Braintree fields
+    Here you can map individual Gravity form fields to Braintree fields so that they will show up in the Braintree transaction details.
 </p>
+<p>The field names on the left are currently available in Braintree.  Simply select the Gravity form field from the drop-down that you would like to pass to the matching field in Braintree transaction details.</p>
+<p>If you do not see a Braintree field available for your Gravity form field, you may create custom fields within your Braintree account, and then add these custom fields at the bottom of this field mapping section.</p>
+<p>For more information, <a target="_blank" href="https://www.angelleye.com/gravity-forms-braintree-payments-field-mapping?utm_source=gravity-forms-braintree&utm_medium=plugin&utm_campaign=gravity-forms-plugin">see our documentation</a>.</p>
 <form action="<?php echo add_query_arg(['action'=>'save_gravity_form_mapping'], admin_url('admin-ajax.php')) ?>" method="post" id="gform_braintree_mapping">
     <input type="hidden" name="gform_id" value="<?php echo $form_id ?>">
     <table class="gforms_form_settings" cellspacing="0" cellpadding="0">
