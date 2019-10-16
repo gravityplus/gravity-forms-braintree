@@ -23,7 +23,7 @@ class AngelleyeGravityBraintreeFieldMapping
             if($this->isCreditCardFieldExist($form_id)) {
                 $menu_items[] = array(
                     'name' => 'braintree_mapping_settings_page',
-                    'label' => __('BrainTree Fields Mapping')
+                    'label' => __('Braintree Field Mapping')
                 );
             }
         }
