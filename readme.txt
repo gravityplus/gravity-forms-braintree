@@ -3,7 +3,7 @@ Contributors: angelleye, Plugify, hello@lukerollans.me, gravityplus
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9CQZZGGMF78VY&source=url
 Tags: gravity form, gravity forms, credit card, credit cards, payment, payments, braintree
 Requires at least: 3.8
-Tested up to: 5.2.2
+Tested up to: 5.2.4
 Stable tag: 2.1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -63,6 +63,10 @@ In the search field type Gravity Forms Braintree Payments and click Search Plugi
 4. List of active feeds on the current form.
 
 == Changelog ==
+
+= 2.2.0 = 10.16.2019 =
+* Feature - Adds Braintree field mapping capability. ([GFB-12](https://github.com/angelleye/gravity-forms-braintree/pull/14))
+* Tweak - Adds a notice if you try to activate the Braintree Payments extension without Gravity Forms active.
 
 = 2.1.3 - 07.23.2019 =
 * Tweak - Update push notification system sync interval time. ([GFB-9](https://github.com/angelleye/gravity-forms-braintree/pull/11)) 
