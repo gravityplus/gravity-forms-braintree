@@ -34,7 +34,8 @@ jQuery(document).ready(function ($) {
 
         var data = $(this).serialize();
         var url = $(this).attr('action');
-
+        $('.successful_message').html('');
+        $('.updatemappingbtn').html('Saving...').attr('disabled','disabled');
         $.ajax({
             url:url,
             method: 'post',
@@ -47,6 +48,8 @@ jQuery(document).ready(function ($) {
                 console.log('error', response);
             }
 
+        }).complete(function () {
+            $('.updatemappingbtn').html('Update Mapping').removeAttr('disabled');
         });
 
     })
