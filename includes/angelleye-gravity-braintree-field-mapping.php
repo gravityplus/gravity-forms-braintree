@@ -122,19 +122,28 @@ class AngelleyeGravityBraintreeFieldMapping
     }
 
     function addNoticeToCreditCardForm( $field_content, $field,  $value, $lead_id, $form_id ) {
-        if ( $field->type == 'creditcard' ) {
-            //echo ($field_content); die;
-            $first_label_position = strpos($field_content, '<label');
-            if($first_label_position!==false) {
-                //'http://localhost/angelleye-wp/wp-admin/admin.php?page=gf_edit_forms&view=settings&subview=&id=3'
-                $mapping_page_link = add_query_arg(['view'=>'settings', 'subview' => 'braintree_mapping_settings_page', 'id' => $form_id ], menu_page_url('gf_edit_forms', false));
-                $feed_page_link = add_query_arg(['view'=>'settings', 'subview' => 'gravity-forms-braintree', 'id' => $form_id ], menu_page_url('gf_edit_forms', false));
-                $field_content = substr_replace($field_content,
-                    "<div style='background-color: #f5e5cd;padding: 10px;color: #000;opacity: 0.83;transition: opacity 0.6s;margin:10px 0;'><p style='margin: 0'>1) You can use <a href='$mapping_page_link'>Braintree Fields Mapping</a> to send the values with transaction.<br>2) To process the payments, please configure the <a href='$feed_page_link'>Braintree feed</a>.</p></div>",
-                    $first_label_position, 0);
+        if(is_admin()) {
+            if ($field->type == 'creditcard') {
+                //echo ($field_content); die;
+                $first_label_position = strpos($field_content, '<label');
+                if ($first_label_position !== false) {
+                    //'http://localhost/angelleye-wp/wp-admin/admin.php?page=gf_edit_forms&view=settings&subview=&id=3'
+                    $mapping_page_link = add_query_arg([
+                        'view' => 'settings',
+                        'subview' => 'braintree_mapping_settings_page',
+                        'id' => $form_id
+                    ], menu_page_url('gf_edit_forms', false));
+                    $feed_page_link = add_query_arg([
+                        'view' => 'settings',
+                        'subview' => 'gravity-forms-braintree',
+                        'id' => $form_id
+                    ], menu_page_url('gf_edit_forms', false));
+                    $field_content = substr_replace($field_content,
+                        "<div style='background-color: #f5e5cd;padding: 10px;color: #000;opacity: 0.83;transition: opacity 0.6s;margin:10px 0;'><p style='margin: 0'>1) You can use <a href='$mapping_page_link'>Braintree Fields Mapping</a> to send the values with transaction.<br>2) To process the payments, please configure the <a href='$feed_page_link'>Braintree feed</a>.</p></div>",
+                        $first_label_position, 0);
+                }
             }
         }
-
         return $field_content;
     }
 
