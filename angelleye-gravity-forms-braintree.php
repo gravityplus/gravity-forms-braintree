@@ -92,6 +92,15 @@ class AngelleyeGravityFormsBraintree{
 
         }
     }
+
+    public static function isBraintreeFeedActive()
+    {
+        global $wpdb;
+        $addon_feed_table_name = $wpdb->prefix . 'gf_addon_feed';
+        $is_active = $wpdb->get_var("select is_active from ".$addon_feed_table_name." where addon_slug='gravity-forms-braintree' and is_active=1");
+
+        return $is_active=='1';
+    }
 }
 
 AngelleyeGravityFormsBraintree::getInstance();
