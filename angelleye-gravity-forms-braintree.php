@@ -17,7 +17,7 @@
 
 // Ensure WordPress has been bootstrapped
 if( !defined( 'ABSPATH' ) ) {
-	exit;
+    exit;
 }
 
 if (!defined('AEU_ZIP_URL')) {
@@ -32,23 +32,31 @@ if (!defined('PAYPAL_FOR_WOOCOMMERCE_PUSH_NOTIFICATION_WEB_URL')) {
     define('PAYPAL_FOR_WOOCOMMERCE_PUSH_NOTIFICATION_WEB_URL', 'https://www.angelleye.com/');
 }
 
+require_once dirname(__FILE__) . '/includes/angelleye-gravity-braintree-activator.php';
 
 class AngelleyeGravityFormsBraintree{
-    
+
     protected static $instance = null;
     public static $plugin_base_file;
-    
+
     public static function getInstance()
     {
         self::$plugin_base_file = plugin_basename(__FILE__);
         if(self::$instance==null)
             self::$instance = new AngelleyeGravityFormsBraintree();
-        
+
         return self::$instance;
     }
 
     public function __construct()
     {
+        register_activation_hook( __FILE__, array(AngelleyeGravityBraintreeActivator::class,"InstallDb") );
+        register_deactivation_hook( __FILE__, array(AngelleyeGravityBraintreeActivator::class,"DeactivatePlugin") );
+        register_uninstall_hook( __FILE__, array(AngelleyeGravityBraintreeActivator::class,'Uninstall'));
+
+        add_action( 'update_option_active_sitewide_plugins', array(AngelleyeGravityBraintreeActivator::class,'otherPluginDeactivated'), 10, 2 );
+        add_action( 'update_option_active_plugins', array(AngelleyeGravityBraintreeActivator::class,'otherPluginDeactivated'), 10, 2 );
+
         $this->init();
     }
 
@@ -67,7 +75,7 @@ class AngelleyeGravityFormsBraintree{
 
             // Require plugin entry point
             require_once $path . 'lib/class.plugify-gform-braintree.php';
-
+            require_once $path . 'lib/angelleye-gravity-forms-payment-logger.php';
             require_once $path . 'includes/angelleye-gravity-braintree-field-mapping.php';
 
             /**
@@ -80,6 +88,7 @@ class AngelleyeGravityFormsBraintree{
             // Fire off entry point
             new Plugify_GForm_Braintree();
             new AngelleyeGravityBraintreeFieldMapping();
+            AngellEYE_GForm_Braintree_Payment_Logger::instance();
 
         }
     }
