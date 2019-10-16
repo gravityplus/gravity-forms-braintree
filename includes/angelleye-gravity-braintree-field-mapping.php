@@ -127,20 +127,30 @@ class AngelleyeGravityBraintreeFieldMapping
                 //echo ($field_content); die;
                 $first_label_position = strpos($field_content, '<label');
                 if ($first_label_position !== false) {
-                    //'http://localhost/angelleye-wp/wp-admin/admin.php?page=gf_edit_forms&view=settings&subview=&id=3'
+
                     $mapping_page_link = add_query_arg([
                         'view' => 'settings',
                         'subview' => 'braintree_mapping_settings_page',
                         'id' => $form_id
                     ], menu_page_url('gf_edit_forms', false));
-                    $feed_page_link = add_query_arg([
-                        'view' => 'settings',
-                        'subview' => 'gravity-forms-braintree',
-                        'id' => $form_id
-                    ], menu_page_url('gf_edit_forms', false));
-                    $field_content = substr_replace($field_content,
-                        "<div style='background-color: #f5e5cd;padding: 10px;color: #000;opacity: 0.83;transition: opacity 0.6s;margin:10px 0;'><p style='margin: 0'>1) You can use <a href='$mapping_page_link'>Braintree Fields Mapping</a> to send the values with transaction.<br>2) To process the payments, please configure the <a href='$feed_page_link'>Braintree feed</a>.</p></div>",
-                        $first_label_position, 0);
+
+                    if(!AngelleyeGravityFormsBraintree::isBraintreeFeedActive()) {
+                        $feed_page_link = add_query_arg([
+                            'view' => 'settings',
+                            'subview' => 'gravity-forms-braintree',
+                            'id' => $form_id
+                        ], menu_page_url('gf_edit_forms', false));
+                        $add_text[] = "To process payments, please configure a <a target='_blank' href='$feed_page_link'>Braintree feed</a>.";
+                    }
+
+                    $add_text[] = "You can use <a target='_blank' href='$mapping_page_link'>Braintree Field Mapping</a> to pass specific data values into the Braintree transaction details.";
+                    $final_text = '';
+                    foreach ($add_text as $key=>$single_text){
+                        $final_text.=($final_text!=''?'<br>':'').($key+1).") ".$single_text;
+                    }
+                    $replacement_text = "<div style='background-color: #f5e5cd;padding: 10px;color: #000;opacity: 0.83;transition: opacity 0.6s;margin:10px 0;'><p style='margin: 0'>$final_text</p></div>";
+
+                    $field_content = substr_replace($field_content,$replacement_text, $first_label_position, 0);
                 }
             }
         }
