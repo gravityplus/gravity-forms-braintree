@@ -65,7 +65,7 @@ In the search field type Gravity Forms Braintree Payments and click Search Plugi
 == Changelog ==
 
 = 2.2.0 = 10.16.2019 =
-* Feature - Adds Braintree field mapping capability. ([GFB-12](https://github.com/angelleye/gravity-forms-braintree/pull/14))
+* Feature - Adds Braintree field mapping capability. ([GFB-12](https://github.com/angelleye/gravity-forms-braintree/pull/14)) ([GFB-15](https://github.com/angelleye/gravity-forms-braintree/pull/16))
 * Tweak - Adds a notice if you try to activate the Braintree Payments extension without Gravity Forms active.
 
 = 2.1.3 - 07.23.2019 =
