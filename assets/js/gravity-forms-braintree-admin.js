@@ -22,7 +22,7 @@ jQuery(function () {
 
 jQuery(document).ready(function ($) {
     $('.addmorecustomfield').click(function () {
-        $('.custom_field_row:last').after('<tr class="custom_field_row"><td><input type="text" name="gravity_form_custom_field_name[]" value="" placeholder="Please enter your field name from BrainTree" class="form-control" ></td><td>'+$('.custom_fields_template').html()+' <a class="remove_custom_field">Remove</a> </td></tr>');
+        $('.custom_field_row:last').after('<tr class="custom_field_row"><td valign="top"><input type="text" name="gravity_form_custom_field_name[]" value="" placeholder="Please enter your field name from BrainTree" class="form-control" ></td><td>'+$('.custom_fields_template').html()+' <a class="remove_custom_field">Remove</a> </td></tr>');
     });
 
     $('body').on('click','.remove_custom_field', function () {

@@ -137,13 +137,13 @@ if(!AngelleyeGravityFormsBraintree::isBraintreeFeedActive()) {
                     </tr>
         <?php }
         } ?>
-        <tr class="custom_field_row"><td colspan="2"><h4 class="gf_settings_subgroup_title">Custom Fields <a href="#" onclick="return false;" onkeypress="return false;" class="gf_tooltip tooltip tooltip_notification_send_to_email" title="<h6>Setup custom fields</h6>You can map your braintree custom fields with gravity form fields."><i class="fa fa-question-circle"></i></a> <a class="pull-right addmorecustomfield">Add Custom Field</a></h4></td></tr>
+        <tr class="custom_field_row"><td colspan="2"><h4 class="gf_settings_subgroup_title">Custom Fields <a href="#" onclick="return false;" onkeypress="return false;" class="gf_tooltip tooltip tooltip_notification_send_to_email" title="<h6>Setup custom fields</h6>You can map your braintree custom fields with gravity form fields. For more information, <a target='_blank' href='https://www.angelleye.com/gravity-forms-braintree-payments-field-mapping?utm_source=gravity-forms-braintree&utm_medium=plugin&utm_campaign=gravity-forms-plugin'>see our documentation</a>."><i class="fa fa-question-circle"></i></a> <a class="pull-right addmorecustomfield">Add Custom Field</a></h4></td></tr>
 
         <?php if(isset($braintree_mapping['custom_fields']))
             foreach($braintree_mapping['custom_fields'] as $key => $mapped_id){
             ?><tr class="custom_field_row">
-                <td><input type="text" name="gravity_form_custom_field_name[]" value="<?php echo $key ?>" placeholder="Please enter your field name from BrainTree" class="form-control" ></td>
-                <td>
+                <td valign="top"><input type="text" name="gravity_form_custom_field_name[]" value="<?php echo $key ?>" placeholder="Please enter your field name from BrainTree" class="form-control" ></td>
+                <td valign="top">
                     <select name="gravity_form_custom_field[]">
                         <option value="">-- Map Form Field --</option>
                         <?php foreach ($final_gravity_fields as $gid=>$single_field_label)
@@ -168,8 +168,6 @@ if(!AngelleyeGravityFormsBraintree::isBraintreeFeedActive()) {
     </select>
 </div>
 <style type="text/css">
-    .form-control{width:99%}
-    .pull-right{
-        float: right;}
-    .hide{display: none;}
+    .remove_custom_field, .addmorecustomfield{cursor:pointer}
+    .form-control{width:99% ;padding: 5px;font-size: 13px;line-height: 13px;}.pull-right{float: right;}.hide{display: none;}
 </style>
