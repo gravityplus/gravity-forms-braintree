@@ -65,7 +65,7 @@ In the search field type Gravity Forms Braintree Payments and click Search Plugi
 == Changelog ==
 
 = 2.2.1 - 23.12.2019 =
-* Tweak - Adjustment to Updater plugin notice dismissible. ([PIFW-33](https://github.com/angelleye/gravity-forms-braintree/pull/17))
+* Tweak - Adjustment to Updater plugin notice dismissible. ([GFB-16](https://github.com/angelleye/gravity-forms-braintree/pull/17))
 
 = 2.2.0 = 11.20.2019 =
 * Verification - WordPress 5.3 compatibility.
