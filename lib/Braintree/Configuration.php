@@ -33,7 +33,7 @@ class Configuration
      * Braintree API version to use
      * @access public
      */
-    const API_VERSION =  5;
+    const API_VERSION =  6;
     const GRAPHQL_API_VERSION = '2018-09-10';
 
     public function __construct($attribs = [])
@@ -602,28 +602,6 @@ class Configuration
         return $graphQLServerName;
     }
 
-    public function authUrl()
-    {
-        switch($this->_environment) {
-         case 'production':
-             $serverName = 'https://auth.venmo.com';
-             break;
-         case 'qa':
-             $serverName = 'https://auth.qa.venmo.com';
-             break;
-         case 'sandbox':
-             $serverName = 'https://auth.sandbox.venmo.com';
-             break;
-         case 'development':
-         case 'integration':
-         default:
-             $serverName = 'http://auth.venmo.dev:9292';
-             break;
-        }
-
-        return $serverName;
-    }
-
     /**
      * returns boolean indicating SSL is on or off for this session,
      * depending on environment
@@ -662,4 +640,3 @@ class Configuration
     }
 }
 Configuration::reset();
-class_alias('Braintree\Configuration', 'Braintree_Configuration');

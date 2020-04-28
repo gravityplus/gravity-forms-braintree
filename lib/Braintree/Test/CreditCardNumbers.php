@@ -25,6 +25,9 @@ class CreditCardNumbers
         '6011000990139424',
         ];
 
+    public static $hiper = '6370950000000005';
+    public static $hiperCard = '6062820524845321';
+
     public static $elo = '5066991111111118';
     public static $eloCards = [
         '5066991111111118'
@@ -83,4 +86,3 @@ class CreditCardNumbers
                 );
     }
 }
-class_alias('Braintree\Test\CreditCardNumbers', 'Braintree_Test_CreditCardNumbers');

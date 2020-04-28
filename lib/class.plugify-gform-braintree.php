@@ -103,10 +103,16 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
             try {
 
                 // Configure Braintree environment
-                Braintree_Configuration::environment( strtolower( $settings['environment'] ) );
-                Braintree_Configuration::merchantId( $settings['merchant-id']);
-                Braintree_Configuration::publicKey( $settings['public-key'] );
-                Braintree_Configuration::privateKey( $settings['private-key'] );
+	            $braintree_config = new \Braintree\Configuration([
+		            'environment' => strtolower( $settings['environment'] ) ,
+		            'merchantId' => $settings['merchant-id'],
+		            'publicKey' => $settings['public-key'],
+		            'privateKey' => $settings['private-key']
+	            ]);
+
+	            $braintree_config->timeout(60);
+
+	            $gateway = new Braintree\Gateway($braintree_config);
 
                 // Set to auto settlemt if applicable
                 if( $settings['settlement'] == 'Yes' ) {
@@ -114,11 +120,11 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
                 }
 
                 // Send transaction to Braintree
-                $result = Braintree_Transaction::sale( $args );
+	            $result = $gateway->transaction()->sale($args);
 
                 $this->log_debug( "Braintree_Transaction::sale RESPONSE => " . print_r( $result, 1 ) );
                 // Update response to reflect successful payment
-                if( $result->success == '1' ) {
+                if( $result->success ) {
                     do_action('angelleye_gravity_forms_response_data', $result, $submission_data, '16', (strtolower($settings['environment']) == 'sandbox') ? true : false , false, 'braintree');
                     $authorization['is_authorized'] = true;
                     $authorization['error_message'] = '';
