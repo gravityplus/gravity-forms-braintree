@@ -6,7 +6,6 @@ use InvalidArgumentException;
 
 /**
  * Braintree Utility methods
- * PHP version 5
  */
 
 class Util
@@ -61,6 +60,9 @@ class Util
         case 404:
             throw new Exception\NotFound();
             break;
+        case 408;
+            throw new Exception\RequestTimeout();
+            break;
         case 426:
             throw new Exception\UpgradeRequired();
             break;
@@ -70,8 +72,8 @@ class Util
         case 500:
             throw new Exception\ServerError();
             break;
-        case 503:
-            throw new Exception\DownForMaintenance();
+        case 504;
+            throw new Exception\GatewayTimeout();
             break;
         default:
             throw new Exception\Unexpected('Unexpected HTTP_RESPONSE #' . $statusCode);
@@ -97,33 +99,26 @@ class Util
                 throw new Exception\Unexpected("Unexpected exception:" . $message);
             }
 
-            switch($error["extensions"]["errorClass"]) {
-            case "VALIDATION":
+            $errorClass = $error["extensions"]["errorClass"];
+
+            if ($errorClass == "VALIDATION") {
                 continue;
-            case "AUTHENTICATION":
+            } else if ($errorClass == "AUTHENTICATION") {
                 throw new Exception\Authentication();
-                break;
-            case "AUTHORIZATION":
+            } else if ($errorClass == "AUTHORIZATION") {
                 throw new Exception\Authorization($message);
-                break;
-            case "NOT_FOUND":
+            } else if ($errorClass == "NOT_FOUND") {
                 throw new Exception\NotFound();
-                break;
-            case "UNSUPPORTED_CLIENT":
+            } else if ($errorClass == "UNSUPPORTED_CLIENT") {
                 throw new Exception\UpgradeRequired();
-                break;
-            case "RESOURCE_LIMIT":
+            } else if ($errorClass == "RESOURCE_LIMIT") {
                 throw new Exception\TooManyRequests();
-                break;
-            case "INTERNAL":
+            } else if ($errorClass == "INTERNAL") {
                 throw new Exception\ServerError();
-                break;
-            case "SERVICE_AVAILABILITY":
-                throw new Exception\DownForMaintenance();
-                break;
-            default:
+            } else if ($errorClass == "SERVICE_AVAILABILITY") {
+                throw new Exception\ServiceUnavailable();
+            } else {
                 throw new Exception\Unexpected('Unexpected exception ' . $message);
-                break;
             }
         }
     }
@@ -469,4 +464,3 @@ class Util
         return $invalidKeys;
     }
 }
-class_alias('Braintree\Util', 'Braintree_Util');
