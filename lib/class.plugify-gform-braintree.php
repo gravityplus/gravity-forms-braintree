@@ -28,6 +28,8 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
         add_action('admin_enqueue_scripts', array($this, 'enqueue_styles_css'), 10);
         add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts_js'), 10);
+	    add_filter( 'gform_noconflict_scripts', [$this, 'include_angelleye_braintree_script_noconflict'] );
+	    add_filter( 'gform_noconflict_styles', [$this, 'include_angelleye_braintree_style_noconflict'] );
         // Build parent
         parent::__construct();
     }
@@ -385,12 +387,26 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
         }
     }
 
+	public function include_angelleye_braintree_style_noconflict( $styles ) {
+		$styles[] = 'gravity-forms-braintree-admin-css';
+		return $styles;
+    }
+
+	public function include_angelleye_braintree_script_noconflict( $scripts ) {
+    	$scripts[] = 'gravity-forms-braintree-admin';
+		return $scripts;
+    }
+
     public function enqueue_scripts_js() {
-        wp_enqueue_script('gravity-forms-braintree-admin', GRAVITY_FORMS_BRAINTREE_ASSET_URL . 'assets/js/gravity-forms-braintree-admin.js', array('jquery'), $this->_version, false);
+    	if(GFForms::is_gravity_page()) {
+		    wp_enqueue_script( 'gravity-forms-braintree-admin', GRAVITY_FORMS_BRAINTREE_ASSET_URL . 'assets/js/gravity-forms-braintree-admin.js', array( 'jquery' ), $this->_version, false );
+	    }
     }
 
     public function enqueue_styles_css() {
-        wp_enqueue_style('gravity-forms-braintree-admin-css', GRAVITY_FORMS_BRAINTREE_ASSET_URL . 'assets/css/gravity-forms-braintree-admin.css', array(), $this->_version, 'all');
+	    if(GFForms::is_gravity_page()) {
+		    wp_enqueue_style( 'gravity-forms-braintree-admin-css', GRAVITY_FORMS_BRAINTREE_ASSET_URL . 'assets/css/gravity-forms-braintree-admin.css', array(), $this->_version, 'all' );
+	    }
     }
 
 }
