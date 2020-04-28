@@ -71,7 +71,9 @@ class AngelleyeGravityFormsBraintree{
             GFForms::include_payment_addon_framework();
 
             // Require Braintree Payments core
-            require_once $path . 'lib/Braintree.php';
+	        if(!class_exists('Braintree')) {
+		        require_once $path . 'lib/Braintree.php';
+	        }
 
             // Require plugin entry point
             require_once $path . 'lib/class.plugify-gform-braintree.php';
