@@ -137,7 +137,24 @@ if(!AngelleyeGravityFormsBraintree::isBraintreeFeedActive()) {
                     </tr>
         <?php }
         } ?>
-        <tr class="custom_field_row"><td colspan="2"><h4 class="gf_settings_subgroup_title">Custom Fields <a href="#" onclick="return false;" onkeypress="return false;" class="gf_tooltip tooltip tooltip_notification_send_to_email" title="<h6>Setup custom fields</h6>You can map your braintree custom fields with gravity form fields. For more information, <a target='_blank' href='https://www.angelleye.com/gravity-forms-braintree-payments-field-mapping?utm_source=gravity-forms-braintree&utm_medium=plugin&utm_campaign=gravity-forms-plugin'>see our documentation</a>."><i class="fa fa-question-circle"></i></a> <a class="pull-right addmorecustomfield">Add Custom Field</a></h4></td></tr>
+        <tr class="custom_field_row">
+            <td colspan="2">
+                <h4 class="gf_settings_subgroup_title">Custom Fields
+                    <a href="#" onclick="return false;" onkeypress="return false;" class="gf_tooltip tooltip tooltip_notification_send_to_email" title="<h6>Setup custom fields</h6>You can map your braintree custom fields with gravity form fields. For more information, <a target='_blank' href='https://www.angelleye.com/gravity-forms-braintree-payments-field-mapping?utm_source=gravity-forms-braintree&utm_medium=plugin&utm_campaign=gravity-forms-plugin'>see our documentation</a>.">
+                        <i class="fa fa-question-circle"></i>
+                    </a>
+                    <span class="pull-right">
+                        <a class=" addmorecustomfield">Add Custom Field</a>
+                        <a href="#" onclick="return false;" onkeypress="return false;" class="gf_tooltip tooltip tooltip_notification_send_to_email" title="Please make sure all of the defined custom field names matches with Braintree Custom Field API Name. Otherwise, the payment processor will throw an error.">
+                            <i class="fa fa-question-circle"></i>
+                        </a>
+                    </span>
+                </h4>
+                <div class="alert-notification-custom-fields <?php if(!isset($braintree_mapping['custom_fields']) || count($braintree_mapping['custom_fields'])==0) echo 'hide'; ?>">
+                    <p>Please make sure all of the defined custom field names match the Braintree Custom Field API names.  Otherwise, the payment processor will return an error.</p>
+                </div>
+            </td>
+        </tr>
 
         <?php if(isset($braintree_mapping['custom_fields']))
             foreach($braintree_mapping['custom_fields'] as $key => $mapped_id){
