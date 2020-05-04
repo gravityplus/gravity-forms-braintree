@@ -76,3 +76,13 @@
     position: relative;
 }
 
+.alert-notification-custom-fields:after,.alert-notification-custom-fields:before {
+    content:"";display:table;clear:both;
+}
+.alert-notification-custom-fields{
+    padding:0.01em 16px;color:#000!important;background-color:#ffffcc!important;margin-top:16px;
+}
+
+#gform_braintree_mapping table{
+    width: 800px;
+}
