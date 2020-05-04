@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: gravity form, gravity forms, credit card, credit cards, payment, payments, braintree
 Requires at least: 3.8
 Tested up to: 5.3.2
-Stable tag: 3.0.1
+Stable tag: 3.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,9 @@ In the search field type Gravity Forms Braintree Payments and click Search Plugi
 4. List of active feeds on the current form.
 
 == Changelog ==
+
+= 3.0.2 - 05.04.2020 =
+* Fix - Resolved the issue with PHP Version comparison ([GFB-21](https://github.com/angelleye/gravity-forms-braintree/pull/23))
 
 = 3.0.1 - 04.28.2020 =
 * Fix - Compatibility issue with PayPal for WooCommerce in loading Braintree library ([GFB-18](https://github.com/angelleye/gravity-forms-braintree/pull/22))
