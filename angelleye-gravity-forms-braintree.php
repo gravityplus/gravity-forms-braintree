@@ -33,11 +33,13 @@ if (!defined('PAYPAL_FOR_WOOCOMMERCE_PUSH_NOTIFICATION_WEB_URL')) {
 }
 
 require_once dirname(__FILE__) . '/includes/angelleye-gravity-braintree-activator.php';
+require_once dirname(__FILE__) . '/includes/angelleye-plugin-requirement-checker.php';
 
 class AngelleyeGravityFormsBraintree{
 
     protected static $instance = null;
     public static $plugin_base_file;
+    public static $version = '3.0.2';
 
     public static function getInstance()
     {
@@ -54,45 +56,55 @@ class AngelleyeGravityFormsBraintree{
         register_deactivation_hook( __FILE__, array(AngelleyeGravityBraintreeActivator::class,"DeactivatePlugin") );
         register_uninstall_hook( __FILE__, array(AngelleyeGravityBraintreeActivator::class,'Uninstall'));
 
-        add_action( 'update_option_active_sitewide_plugins', array(AngelleyeGravityBraintreeActivator::class,'otherPluginDeactivated'), 10, 2 );
-        add_action( 'update_option_active_plugins', array(AngelleyeGravityBraintreeActivator::class,'otherPluginDeactivated'), 10, 2 );
+        add_action('plugins_loaded', [$this, 'requirementCheck']);
+    }
 
-        $this->init();
+	public function requirementCheck() {
+		$checker = new Angelleye_Plugin_Requirement_Checker('Gravity Forms Braintree Payments', self::$version, self::$plugin_base_file);
+		$checker->setPHP('7.2');
+		$checker->setRequiredClasses(['GFForms' => 'Gravity forms plugin is required to run the Gravity Forms Braintree.']);
+		$checker->setRequiredExtensions(['xmlwriter', 'openssl', 'dom', 'hash', 'curl']);
+		$checker->setRequiredPlugins(['gravityforms/gravityforms.php'=>'2.4']);
+		$checker->setDeactivatePlugins([self::$plugin_base_file]);
+		if($checker->check()===true) {
+			$this->init();
+		}
     }
 
     public function init()
     {
-        $path = trailingslashit( dirname( __FILE__ ) );
+	    $path = trailingslashit( dirname( __FILE__ ) );
 
-        // Ensure Gravity Forms (payment addon framework) is installed and good to go
-        if( is_callable( array( 'GFForms', 'include_payment_addon_framework' ) ) ) {
+	    // Ensure Gravity Forms (payment addon framework) is installed and good to go
+	    if ( is_callable( array( 'GFForms', 'include_payment_addon_framework' ) ) ) {
 
-            // Bootstrap payment addon framework
-            GFForms::include_payment_addon_framework();
+		    // Bootstrap payment addon framework
+		    GFForms::include_payment_addon_framework();
 
-            // Require Braintree Payments core
-	        if(!class_exists('Braintree')) {
-		        require_once $path . 'lib/Braintree.php';
-	        }
+		    // Require Braintree Payments core
+		    if ( ! class_exists( 'Braintree' ) ) {
+			    require_once $path . 'lib/Braintree.php';
+		    }
 
-            // Require plugin entry point
-            require_once $path . 'lib/class.plugify-gform-braintree.php';
-            require_once $path . 'lib/angelleye-gravity-forms-payment-logger.php';
-            require_once $path . 'includes/angelleye-gravity-braintree-field-mapping.php';
+		    // Require plugin entry point
+		    require_once $path . 'lib/class.plugify-gform-braintree.php';
+		    require_once $path . 'lib/angelleye-gravity-forms-payment-logger.php';
+		    require_once $path . 'includes/angelleye-gravity-braintree-field-mapping.php';
 
-            /**
-             * Required functions
-             */
-            if (!function_exists('angelleye_queue_update')) {
-                require_once( 'includes/angelleye-functions.php' );
-            }
+		    /**
+		     * Required functions
+		     */
+		    if ( ! function_exists( 'angelleye_queue_update' ) ) {
+			    require_once( 'includes/angelleye-functions.php' );
+		    }
 
-            // Fire off entry point
-            new Plugify_GForm_Braintree();
-            new AngelleyeGravityBraintreeFieldMapping();
-            AngellEYE_GForm_Braintree_Payment_Logger::instance();
+		    // Fire off entry point
+		    new Plugify_GForm_Braintree();
+		    new AngelleyeGravityBraintreeFieldMapping();
+		    AngellEYE_GForm_Braintree_Payment_Logger::instance();
 
-        }
+	    }
+
     }
 
     public static function isBraintreeFeedActive()
