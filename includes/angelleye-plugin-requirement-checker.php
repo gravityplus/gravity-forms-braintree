@@ -72,6 +72,7 @@ if(!class_exists('Angelleye_Plugin_Requirement_Checker')){
 			}
 
 			if(count($this->required_plugins)){
+				require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 				$all_plugins = get_plugins();
 				$active_plugins = get_option('active_plugins');
 				foreach ($this->required_plugins as $single_plugin => $min_version_required){
