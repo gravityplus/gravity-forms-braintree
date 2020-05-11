@@ -16,6 +16,8 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
     protected $_supports_callbacks = false;
     protected $_enable_rg_autoupgrade = true;
 
+    protected $selected_payment_method = 'creditcard';
+
     /**
      * Class constructor. Send __construct call to parent
      * @since 1.0
@@ -34,6 +36,34 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
         parent::__construct();
     }
 
+	/**
+	 * Override credit card field check, so that we can return true when someone has ach form
+	 * If any user will have any form then same payment gateway class will be used
+	 * @param array $form
+	 *
+	 * @return bool
+	 */
+	public function has_credit_card_field( $form ) {
+		if(isset($form['fields'])) {
+			foreach ($form['fields'] as $single_field) {
+				if ($single_field->type == 'creditcard' || $single_field->type=='braintree_ach') {
+					return true;
+				}
+			}
+		}
+		return $this->get_credit_card_field( $form ) !== false;
+	}
+
+	/**
+	 * Override default message for Gravity Form Braintree Feeds
+	 * @return string
+	 */
+	public function requires_credit_card_message() {
+		$url = add_query_arg( array( 'view' => null, 'subview' => null ) );
+
+		return sprintf( esc_html__( "You must add a Credit Card/ACH Payment field to your form before creating a feed. Let's go %sadd one%s!", 'gravityforms' ), "<a href='" . esc_url( $url ) . "'>", '</a>' );
+	}
+
     /**
      * Override init_frontend to assign front end based filters and actions required for operation
      *
@@ -46,6 +76,190 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
         parent::init_frontend();
 
     }
+
+	/**
+	 * Init the Braintree configuration and return gateway for transactions, etc.
+	 * @return bool|\Braintree\Gateway
+	 * @throws \Braintree\Exception\Configuration
+	 */
+	public function getBraintreeGateway() {
+		$settings = $this->get_plugin_settings();
+		if(!$settings)
+			return false;
+
+		// Configure Braintree environment
+		$braintree_config = new \Braintree\Configuration([
+			'environment' => strtolower( $settings['environment'] ) ,
+			'merchantId' => $settings['merchant-id'],
+			'publicKey' => $settings['public-key'],
+			'privateKey' => $settings['private-key']
+		]);
+
+		$braintree_config->timeout(60);
+
+		$gateway = new Braintree\Gateway($braintree_config);
+		return $gateway;
+    }
+
+	/**
+	 * ACH Payment authorization
+	 * @param $feed
+	 * @param $submission_data
+	 * @param $form
+	 * @param $entry
+	 *
+	 * @return array|bool
+	 * @throws \Braintree\Exception\Configuration
+	 */
+	public function ach_authorize( $feed, $submission_data, $form, $entry ) {
+		$this->log_debug( "Braintree_ACH_Authorize::START" );
+    	// Prepare authorization response payload
+		$authorization = array(
+			'is_authorized' => false,
+			'error_message' => apply_filters( 'gform_braintree_credit_card_failure_message', __( 'We are unable to authorize the bank account, Please try again.', 'gravity-forms-braintree' ) ),
+			'transaction_id' => '',
+			'captured_payment' => array(
+				'is_success' => false,
+				'error_message' => '',
+				'transaction_id' => '',
+				'amount' => $submission_data['payment_amount']
+			)
+		);
+
+		$ach_device_corelation = rgpost('ach_device_corelation');
+		$ach_token = rgpost('ach_token');
+		$payment_amount = number_format($submission_data['payment_amount'],2,'.','');
+
+		$gateway = $this->getBraintreeGateway();
+		if( $gateway !== false ) {
+			$settings = $this->get_plugin_settings();
+			$response = getAngelleyeBraintreePaymentFields($form);
+			$braintree_ach_field = $response['braintree_ach'];
+			$account_number = rgpost( 'input_' . $braintree_ach_field->id . '_1' );
+			$account_type = rgpost( 'input_' . $braintree_ach_field->id . '_2' );
+			$routing_number = rgpost( 'input_' . $braintree_ach_field->id . '_3' );
+			$account_holder_name = rgpost( 'input_' . $braintree_ach_field->id . '_4' );
+
+			$account_holder_name = explode(' ', $account_holder_name);
+			/**
+			 * Create customer in Braintree
+			 */
+			$customer_request = [
+				'firstName' => @$account_holder_name[0],
+				'lastName'  => end($account_holder_name),
+			];
+			$this->log_debug( "Braintree_ACH_Customer::create REQUEST => " . print_r( $customer_request, 1 ) );
+			$customer_result = $gateway->customer()->create( $customer_request );
+			$this->log_debug( "Braintree_ACH_Customer::create RESPONSE => " . print_r( $customer_result, 1 ) );
+
+			if ( $customer_result->success ) {
+				$payment_method_request = [
+					'customerId'         => $customer_result->customer->id,
+					'paymentMethodNonce' => $ach_token,
+					'options'            => [
+						'usBankAccountVerificationMethod' => Braintree\Result\UsBankAccountVerification::NETWORK_CHECK
+					]
+				];
+
+				$this->log_debug( "Braintree_ACH_PaymentRequest::create REQUEST => " . print_r( $payment_method_request, 1 ) );
+				$payment_method_response = $gateway->paymentMethod()->create( $payment_method_request );
+				$this->log_debug( "Braintree_ACH_PaymentRequest::create RESPONSE => " . print_r( $payment_method_response, 1 ) );
+
+				if(isset($payment_method_response->paymentMethod->token)) {
+
+					$sale_request = [
+						'amount'             => $payment_amount,
+						'paymentMethodToken' => $payment_method_response->paymentMethod->token,
+						'deviceData'         => $ach_device_corelation,
+						'options'            => [
+							'submitForSettlement' => true
+						]
+					];
+
+					$this->log_debug( "Braintree_ACH_Transaction::sale REQUEST => " . print_r( $sale_request, 1 ) );
+					$sale_response = $gateway->transaction()->sale($sale_request);
+					$this->log_debug( "Braintree_ACH_Transaction::sale RESPONSE => " . print_r( $sale_response, 1 ) );
+
+					if ( $sale_response->success ) {
+						do_action('angelleye_gravity_forms_response_data', $sale_response, $submission_data, '16', (strtolower($settings['environment']) == 'sandbox') ? true : false , false, 'braintree_ach');
+						$authorization['is_authorized'] = true;
+						$authorization['error_message'] = '';
+						$authorization['transaction_id'] = $sale_response->transaction->id;
+
+						$authorization['captured_payment'] = array(
+							'is_success' => true,
+							'transaction_id' => $sale_response->transaction->id,
+							'amount' => $sale_response->transaction->amount,
+							'error_message' => '',
+							'payment_method' => 'Braintree ACH'
+						);
+
+						$this->log_debug( "Braintree_ACH::SUCCESS");
+					} else {
+						if( isset( $sale_response->transaction->processorResponseText ) ) {
+							$authorization['error_message'] = sprintf( 'Your bank did not authorized the transaction: %s.', $sale_response->transaction->processorResponseText);
+						}else {
+							$authorization['error_message'] = sprintf( 'Your bank declined the transaction, please try again or contact bank.');
+						}
+						$this->log_debug( "Braintree_ACH::FAILED_ERROR");
+					}
+				} else {
+					$authorization['error_message'] = __('We are unable to authorize bank account, This may have happened due to expired token, please try again.', 'gravity-forms-braintree');
+				}
+			} else {
+				$authorization['error_message'] = __('Unable to proceed with the transaction due to invalid name.', 'gravity-forms-braintree');
+			}
+
+			return $authorization;
+		}
+
+		$this->log_debug( "Braintree_ACH::FAILED");
+		return false;
+
+	}
+
+	/**
+	 * Gets the payment validation result.
+	 *
+	 * @since  Unknown
+	 * @access public
+	 *
+	 * @used-by GFPaymentAddOn::validation()
+	 *
+	 * @param array $validation_result    Contains the form validation results.
+	 * @param array $authorization_result Contains the form authorization results.
+	 *
+	 * @return array The validation result for the credit card field.
+	 */
+	public function get_validation_result( $validation_result, $authorization_result ) {
+
+		$credit_card_page = 0;
+		if($this->selected_payment_method=='braintree_ach'){
+			foreach ( $validation_result['form']['fields'] as &$field ) {
+				if ( $field->type == 'braintree_ach' ) {
+					$field->failed_validation  = true;
+					$field->validation_message = $authorization_result['error_message'];
+					$credit_card_page          = $field->pageNumber;
+					break;
+				}
+			}
+		}else {
+			foreach ( $validation_result['form']['fields'] as &$field ) {
+				if ( $field->type == 'creditcard' ) {
+					$field->failed_validation  = true;
+					$field->validation_message = $authorization_result['error_message'];
+					$credit_card_page          = $field->pageNumber;
+					break;
+				}
+			}
+		}
+		$validation_result['credit_card_page'] = $credit_card_page;
+		$validation_result['is_valid']         = false;
+
+		return $validation_result;
+
+	}
+
 
     /**
      * After form has been submitted, send CC details to Braintree and ensure the card is going to work
@@ -68,6 +282,22 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
      * @return void
      */
     public function authorize( $feed, $submission_data, $form, $entry ) {
+
+	    $selected_payment_method = 'braintree_ach';
+	    $response = getAngelleyeBraintreePaymentFields($form);
+	    if($response['braintree_ach_cc_toggle']!==false){
+		    $selected_payment_method = rgpost( 'input_' . $response['braintree_ach_cc_toggle']->id . '_1' );
+	    }else {
+	    	//This means there was no toggle button, Need to identify based on the fields
+		    if($response['creditcard']!==false)
+			    $selected_payment_method = 'creditcard';
+	    }
+
+	    $this->selected_payment_method = $selected_payment_method;
+	    if($selected_payment_method=='braintree_ach'){
+	    	return $this->ach_authorize($feed, $submission_data, $form, $entry);
+	    }
+
 
         // Prepare authorization response payload
         $authorization = array(
@@ -104,17 +334,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
             try {
 
-                // Configure Braintree environment
-	            $braintree_config = new \Braintree\Configuration([
-		            'environment' => strtolower( $settings['environment'] ) ,
-		            'merchantId' => $settings['merchant-id'],
-		            'publicKey' => $settings['public-key'],
-		            'privateKey' => $settings['private-key']
-	            ]);
-
-	            $braintree_config->timeout(60);
-
-	            $gateway = new Braintree\Gateway($braintree_config);
+	            $gateway = $this->getBraintreeGateway();
 
                 // Set to auto settlemt if applicable
                 if( $settings['settlement'] == 'Yes' ) {
@@ -233,6 +453,25 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
                     )
                 )
             ),
+	        array(
+		        'title' => 'Braintree ACH Settings',
+		        'fields' => array(
+			        array(
+				        'name' => 'tokenization-key',
+				        'tooltip' => 'Your Braintree Tokenization Key',
+				        'label' => 'Tokenization Key',
+				        'type' => 'text',
+				        'class' => 'medium'
+			        ),
+			        array(
+				        'name' => 'business-name',
+				        'tooltip' => 'For all ACH transactions, you are required to collect a mandate or “proof of authorization” from the customer to prove that you have their explicit permission to debit their bank account. We will put your business name in authorization text',
+				        'label' => 'Business name',
+				        'type' => 'text',
+				        'class' => 'medium'
+			        )
+		        )
+	        ),
             array(
                 'title' => 'Payment Settings',
                 'fields' => array(
@@ -415,4 +654,71 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	    }
     }
 
+	/**
+	 * Load the Braintree JS and Custom JS in frontend
+	 * @return array
+	 */
+	public function scripts() {
+		$translation_array = [];
+		$settings  = $this->get_plugin_settings();
+		if($settings!==false){
+			$translation_array['ach_bt_token'] = $settings['tokenization-key'];
+			$translation_array['ach_business_name'] = $settings['business-name'];
+		}
+
+		$scripts = array(
+			array(
+				'handle'    => 'angelleye-gravity-form-braintree-client',
+				'src'       => 'https://js.braintreegateway.com/web/3.61.0/js/client.min.js',
+				'version'   => $this->_version,
+				'deps'      => array( 'jquery' ),
+				'in_footer' => false,
+				'callback'  => array( $this, 'localize_scripts' ),
+				'enqueue'   => array(
+					array( 'field_types' => array( 'braintree_ach' ) )
+				)
+			),
+			array(
+				'handle'    => 'angelleye-gravity-form-braintree-data-collector',
+				'src'       => 'https://js.braintreegateway.com/web/3.61.0/js/data-collector.min.js',
+				'version'   => $this->_version,
+				'deps'      => array( ),
+				'in_footer' => false,
+				'callback'  => array( $this, 'localize_scripts' ),
+				'enqueue'   => array(
+					array( 'field_types' => array( 'braintree_ach' ) )
+				)
+			),
+			array(
+				'handle'    => 'angelleye-gravity-form-braintree-usbankaccount',
+				'src'       => 'https://js.braintreegateway.com/web/3.61.0/js/us-bank-account.min.js',
+				'version'   => $this->_version,
+				'deps'      => array( ),
+				'in_footer' => false,
+				'callback'  => array( $this, 'localize_scripts' ),
+				'enqueue'   => array(
+					array( 'field_types' => array( 'braintree_ach' ) )
+				)
+			),
+			array(
+				'handle'    => 'angelleye_gravity_form_braintree_ach_handler',
+				'src'       => GRAVITY_FORMS_BRAINTREE_ASSET_URL . 'assets/js/angelleye-braintree-ach-cc.js',
+				'version'   => $this->_version,
+				'deps'      => array( 'jquery', 'angelleye-gravity-form-braintree-client', 'angelleye-gravity-form-braintree-data-collector',
+					'angelleye-gravity-form-braintree-usbankaccount'),
+				'in_footer' => false,
+				'callback'  => array( $this, 'localize_scripts' ),
+				'strings'   => $translation_array,
+				'enqueue'   => array(
+//					array(
+//						'admin_page' => array( 'form_settings' ),
+//						'tab'        => 'simpleaddon'
+//					)
+					array( 'field_types' => array( 'braintree_ach' ) )
+				)
+			),
+		);
+
+		return array_merge( parent::scripts(), $scripts );
+	}
 }

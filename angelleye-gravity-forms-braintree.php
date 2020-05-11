@@ -69,6 +69,7 @@ class AngelleyeGravityFormsBraintree{
 
             // Bootstrap payment addon framework
             GFForms::include_payment_addon_framework();
+	        GFForms::include_addon_framework();
 
             // Require Braintree Payments core
 	        if(!class_exists('Braintree')) {
@@ -76,8 +77,11 @@ class AngelleyeGravityFormsBraintree{
 	        }
 
             // Require plugin entry point
+	        require_once $path . 'includes/angelleye-gravity-braintree-helper.php';
             require_once $path . 'lib/class.plugify-gform-braintree.php';
-            require_once $path . 'lib/angelleye-gravity-forms-payment-logger.php';
+	        require_once $path . 'includes/class-angelleye-gravity-braintree-ach-field.php';
+	        require_once $path . 'includes/class-angelleye-gravity-braintree-ach-toggle-field.php';
+	        require_once $path . 'lib/angelleye-gravity-forms-payment-logger.php';
             require_once $path . 'includes/angelleye-gravity-braintree-field-mapping.php';
 
             /**
@@ -90,6 +94,12 @@ class AngelleyeGravityFormsBraintree{
             // Fire off entry point
             new Plugify_GForm_Braintree();
             new AngelleyeGravityBraintreeFieldMapping();
+
+	        /**
+	         * Register the ACH form field and Payment Method toggle field
+	         */
+	        GF_Fields::register( new Angelleye_Gravity_Braintree_ACH_Field() );
+	        GF_Fields::register( new Angelleye_Gravity_Braintree_ACH_Toggle_Field() );
             AngellEYE_GForm_Braintree_Payment_Logger::instance();
 
         }
