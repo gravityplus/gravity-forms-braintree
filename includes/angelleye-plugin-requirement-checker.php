@@ -60,10 +60,6 @@ if(!class_exists('Angelleye_Plugin_Requirement_Checker')){
 		}
 
 		public function check( $force_check = false ) {
-			$check = get_option($this->plugin_check_option_name);
-			if($check=='passed' && !$force_check)
-				return true;
-
 			if(count($this->required_classes)){
 				foreach ($this->required_classes as $class_name => $class_msg){
 					if(!class_exists($class_name))
@@ -75,21 +71,23 @@ if(!class_exists('Angelleye_Plugin_Requirement_Checker')){
 				require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 				$all_plugins = get_plugins();
 				$active_plugins = get_option('active_plugins');
-				foreach ($this->required_plugins as $single_plugin => $min_version_required){
+				foreach ($this->required_plugins as $single_plugin => $plugin_options){
 					if(in_array($single_plugin, $active_plugins)){
-						if(version_compare($all_plugins[$single_plugin]['Version'], $min_version_required, '<')){
-							$this->errors_list[] = 'You have <b>'.$all_plugins[$single_plugin]['Name'].' -  Version: '.$all_plugins[$single_plugin]['Version'].'</b> active, we require min <b>'.$all_plugins[$single_plugin]['Name'].' - Version: '.$min_version_required.'</b> to run the '.$this->plugin_name;
+						if(isset($plugin_options['ver'])) {
+							$min_version_required = $plugin_options['ver'];
+							if ( version_compare( $all_plugins[ $single_plugin ]['Version'], $min_version_required, '<' ) ) {
+								$this->errors_list[] = 'You have <b>' . $all_plugins[ $single_plugin ]['Name'] . ' -  Version: ' . $all_plugins[ $single_plugin ]['Version'] . '</b> active, we require min <b>' . $all_plugins[ $single_plugin ]['Name'] . ' - Version: ' . $min_version_required . '</b> to run the ' . $this->plugin_name;
+							}
 						}
 					}else if(isset($all_plugins[$single_plugin])) {
-						$this->errors_list[] = 'Please activate <b>'.$all_plugins[$single_plugin]['Name'].'</b> plugin to run the '.$this->plugin_name;
+						$this->errors_list[] = 'Please activate <a href="'.$this->pluginActionLink($single_plugin).'"><b>'.$all_plugins[$single_plugin]['Name'].'</b></a> plugin to run the '.$this->plugin_name;
 					} else{
-						$this->errors_list[] = 'Please install <b>'.$all_plugins[$single_plugin]['Name'].'</b> plugin.';
+						if(isset($plugin_options['install_link']))
+							$this->errors_list[] = 'Please install <a target="_blank" href="'.$plugin_options['install_link'].'"><b>'.$all_plugins[$single_plugin]['Name'].'</b></a> plugin.';
+						else
+							$this->errors_list[] = 'Please install <b>'.$all_plugins[$single_plugin]['Name'].'</b> plugin.';
 					}
 				}
-				/*echo '<pre>';
-				print_r($all_plugins);
-				print_r($active_plugins);die;*/
-
 			}
 
 			if(count($this->required_extensions)) {
@@ -141,6 +139,22 @@ if(!class_exists('Angelleye_Plugin_Requirement_Checker')){
 				foreach ($this->deactivate_plugins as $single_plugin_basename)
 					deactivate_plugins($single_plugin_basename, true);
 			}
+		}
+
+		/**
+		 * Get activation or deactivation link of a plugin
+		 * @param string $plugin plugin file name
+		 * @param string $action action to perform. activate or deactivate
+		 * @return string $url action url
+		 */
+		function pluginActionLink( $plugin, $action = 'activate' ) {
+			if ( strpos( $plugin, '/' ) ) {
+				$plugin = str_replace( '\/', '%2F', $plugin );
+			}
+			$url = sprintf( admin_url( 'plugins.php?action=' . $action . '&plugin=%s&plugin_status=all&paged=1&s' ), $plugin );
+			$_REQUEST['plugin'] = $plugin;
+			$url = wp_nonce_url( $url, $action . '-plugin_' . $plugin );
+			return $url;
 		}
 	}
 }
