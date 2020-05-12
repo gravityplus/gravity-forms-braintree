@@ -84,9 +84,11 @@ class Angelleye_Gravity_Braintree_ACH_Toggle_Field extends GF_Field {
 
 	public function get_entry_inputs() {
 		$inputs = array();
-		foreach ( $this->inputs as $input ) {
-			if ( in_array( $input['id'], array( $this->id . '.1') ) ) {
-				$inputs[] = $input;
+		if(is_array($this->inputs)) {
+			foreach ( $this->inputs as $input ) {
+				if ( in_array( $input['id'], array( $this->id . '.1' ) ) ) {
+					$inputs[] = $input;
+				}
 			}
 		}
 
@@ -117,7 +119,7 @@ class Angelleye_Gravity_Braintree_ACH_Toggle_Field extends GF_Field {
 	public function get_value_submission( $field_values, $get_from_post_global_var = true ) {
 
 		if ( $get_from_post_global_var ) {
-			$value[ $this->id . '.1' ] = $this->get_input_value_submission( 'input_' . $this->id . '_1', rgar( $this->inputs[0], 'name' ), $field_values, true );
+			$value[ $this->id . '.1' ] = $this->get_input_value_submission( 'input_' . $this->id . '_1', rgar( @$this->inputs[0], 'name' ), $field_values, true );
 		} else {
 			$value = $this->get_input_value_submission( 'input_' . $this->id, $this->inputName, $field_values, $get_from_post_global_var );
 		}

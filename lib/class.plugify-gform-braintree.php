@@ -662,8 +662,8 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 		$translation_array = [];
 		$settings  = $this->get_plugin_settings();
 		if($settings!==false){
-			$translation_array['ach_bt_token'] = $settings['tokenization-key'];
-			$translation_array['ach_business_name'] = $settings['business-name'];
+			$translation_array['ach_bt_token'] = @$settings['tokenization-key'];
+			$translation_array['ach_business_name'] = @$settings['business-name'];
 		}
 
 		$scripts = array(

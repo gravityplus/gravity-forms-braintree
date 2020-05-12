@@ -100,6 +100,7 @@ onkeypress='if( event.keyCode == 13 ){ if(window[\"gf_submitting_{$form['id']}\"
 		$account_number   = '';
 		$routing_number   = '';
 		$account_type	  = '';
+		$account_holder_name = '';
 		$autocomplete     = RGFormsModel::is_html5_enabled() ? "autocomplete='off'" : '';
 
 		if ( is_array( $value ) ) {
@@ -343,27 +344,55 @@ onkeypress='if( event.keyCode == 13 ){ if(window[\"gf_submitting_{$form['id']}\"
 	 */
 	public function get_entry_inputs() {
 		$inputs = array();
-		// only store account type and number input values
-		foreach ( $this->inputs as $input ) {
-			if ( in_array( $input['id'], array( $this->id . '.1', $this->id . '.2', $this->id . '.3', $this->id . '.4' ) ) ) {
-				$inputs[] = $input;
+		if(is_array($this->inputs)) {
+			foreach ( $this->inputs as $input ) {
+				if ( in_array( $input['id'], array(
+					$this->id . '.1',
+					$this->id . '.2',
+					$this->id . '.3',
+					$this->id . '.4'
+				) ) ) {
+					$inputs[] = $input;
+				}
 			}
 		}
 
 		return $inputs;
 	}
 
-
+	/**
+	 * Format the entry value for display on the entries list page.
+	 *
+	 * Return a value that's safe to display on the page.
+	 *
+	 * @param string|array $value    The field value.
+	 * @param array        $entry    The Entry Object currently being processed.
+	 * @param string       $field_id The field or input ID currently being processed.
+	 * @param array        $columns  The properties for the columns being displayed on the entry list page.
+	 * @param array        $form     The Form Object currently being processed.
+	 *
+	 * @return string
+	 */
 	public function get_value_entry_list( $value, $entry, $field_id, $columns, $form ) {
 
 		$allowable_tags = $this->get_allowable_tags( $form['id'] );
 
-		if ( $allowable_tags === false ) {
-			// The value is unsafe so encode the value.
-			$return = esc_html( $value );
-		} else {
-			// The value contains HTML but the value was sanitized before saving.
-			$return = $value;
+		list( $input_id, $field_id ) = rgexplode( '.', $field_id, 2 );
+		switch($field_id){
+			case 2:
+				$return = $value=='C'?'Checking':'Savings';
+				break;
+			case 1:
+			case 3:
+			case 4:
+			default:
+				if ( $allowable_tags === false ) {
+					// The value is unsafe so encode the value.
+					$return = esc_html( $value );
+				} else {
+					// The value contains HTML but the value was sanitized before saving.
+					$return = $value;
+				}
 		}
 
 		return $return;
@@ -419,4 +448,5 @@ onkeypress='if( event.keyCode == 13 ){ if(window[\"gf_submitting_{$form['id']}\"
 
 		return $this->sanitize_entry_value( $value, $form['id'] );
 	}
+
 }
