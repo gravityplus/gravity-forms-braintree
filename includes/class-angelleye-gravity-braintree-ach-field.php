@@ -112,42 +112,29 @@ onkeypress='if( event.keyCode == 13 ){ if(window[\"gf_submitting_{$form['id']}\"
 
 
 		$tabindex                = $this->get_tabindex();
-		$account_number_field_input = GFFormsModel::get_input( $this, $this->id . '.1' );
-		$html5_output            = ! is_admin() && GFFormsModel::is_html5_enabled() ? "pattern='[0-9]*' title='" . __( 'Only digits are allowed', 'gravity-forms-braintree' ) . "'" : '';
-		$account_number_label    = rgar( $account_number_field_input, 'customLabel' ) != '' ? $account_number_field_input['customLabel'] : __( 'Account Number', 'gravity-forms-braintree' );
-		$account_number_label    = gf_apply_filters( array( 'gform_1', $form_id ), $account_number_label, $form_id );
-
-		$account_number_placeholder = $this->get_input_placeholder_attribute( $account_number_field_input );
-		if ( $is_sub_label_above ) {
-			$account_field = "<span class='ginput_left{$class_suffix}' id='{$field_id}_1_container' >
-									<label for='{$field_id}_1' id='{$field_id}_1_label' {$sub_label_class_attribute}>{$account_number_label}</label>
-									<input type='text' name='input_{$id}.1' id='{$field_id}_1' class='ginput_account_number' value='{$account_number}' {$tabindex} {$disabled_text} {$autocomplete} {$html5_output} {$account_number_placeholder}/>
-								 </span>";
-		} else {
-			$account_field = "<span class='ginput_left{$class_suffix}' id='{$field_id}_1_container' >
-									<input type='text' name='input_{$id}.1' id='{$field_id}_1' class='ginput_account_number' value='{$account_number}' {$tabindex} {$disabled_text} {$autocomplete} {$html5_output} {$account_number_placeholder}/>
-									<label for='{$field_id}_1' id='{$field_id}_1_label' {$sub_label_class_attribute}>{$account_number_label}</label>
-								 </span>";
-		}
-
-		$tabindex                = $this->get_tabindex();
 		$account_type_field_input = GFFormsModel::get_input( $this, $this->id . '.2' );
 		$account_type_options = $this->getAccountTypeSelectOptions( $account_type );
+
+		$account_types = $this->getAccountTypeList();
+		//$radio_buttons = [];
+		//foreach ($account_types as $ac_key => $ac_label)
+		//	$radio_buttons[]= "<label><input type='radio' name='input_{$id}.2' id='{$field_id}_2' class='ginput_account_type' {$tabindex} {$disabled_text} class='ginput_card_expiration' value='{$ac_key}' ".($ac_key==$account_type?'checked':'')."/> {$ac_label}</label>";
+
 		$account_type_label    = rgar( $account_type_field_input, 'customLabel' ) != '' ? $account_type_field_input['customLabel'] : __( 'Account Type', 'gravity-forms-braintree' );
 		$account_type_label    = gf_apply_filters( array( 'gform_accounttype', $form_id ), $account_type_label, $form_id );
 		if ( $is_sub_label_above ) {
-			$account_type_field = "<span class='ginput_right{$class_suffix}' id='{$field_id}_3_container'>
-                                    <label for='{$field_id}_3' id='{$field_id}_3_label' {$sub_label_class_attribute}>{$account_type_label}</label>
-									<select name='input_{$id}.2' id='{$field_id}_3' class='ginput_account_type' {$tabindex} {$disabled_text} class='ginput_card_expiration'>
+			$account_type_field = "<span class='ginput_full{$class_suffix}' id='{$field_id}_2_container'>
+                                    <label for='{$field_id}_2' id='{$field_id}_2_label' {$sub_label_class_attribute}>{$account_type_label}</label>
+									<select name='input_{$id}.2' id='{$field_id}_2' class='ginput_account_type' {$tabindex} {$disabled_text} class='ginput_card_expiration'>
 										{$account_type_options}
 									</select>
                                  </span>";
 		} else {
-			$account_type_field = "<span class='ginput_right{$class_suffix}' id='{$field_id}_3_container'>
-                                    <select name='input_{$id}.2' id='{$field_id}_3' class='ginput_account_type' {$tabindex} {$disabled_text} class='ginput_card_expiration'>
+			$account_type_field = "<span class='ginput_full{$class_suffix}' id='{$field_id}_2_container'>
+                                   <select name='input_{$id}.2' id='{$field_id}_2' class='ginput_account_type' {$tabindex} {$disabled_text} class='ginput_card_expiration'>
 										{$account_type_options}
 									</select>
-                                    <label for='{$field_id}_3' id='{$field_id}_3_label' {$sub_label_class_attribute}>{$account_type_label}</label>
+                                    <label for='{$field_id}_2' id='{$field_id}_2_label' {$sub_label_class_attribute}>{$account_type_label}</label>
                                  </span>";
 		}
 
@@ -159,15 +146,47 @@ onkeypress='if( event.keyCode == 13 ){ if(window[\"gf_submitting_{$form['id']}\"
 
 		$routing_number_placeholder = $this->get_input_placeholder_attribute( $routing_number_field_input );
 		if ( $is_sub_label_above ) {
-			$routing_field = "<span class='ginput_full{$class_suffix}' id='{$field_id}_2_container' >
-                                    <label for='{$field_id}_2' id='{$field_id}_2_label' {$sub_label_class_attribute}>{$routing_number_label}</label>
-                                    <input type='text' name='input_{$id}.3' id='{$field_id}_2' class='ginput_routing_number' value='{$routing_number}' {$tabindex} {$disabled_text} {$autocomplete} {$html5_output} {$routing_number_placeholder}/>
+			$routing_field = "<span class='ginput_full{$class_suffix}' id='{$field_id}_3_container' >
+                                    <label for='{$field_id}_2' id='{$field_id}_3_label' {$sub_label_class_attribute}>{$routing_number_label}</label>
+                                    <input type='text' name='input_{$id}.3' id='{$field_id}_3' class='ginput_routing_number' value='{$routing_number}' {$tabindex} {$disabled_text} {$autocomplete} {$html5_output} {$routing_number_placeholder}/>
                                  </span>";
 		} else {
-			$routing_field = "<span class='ginput_full{$class_suffix}' id='{$field_id}_2_container' >
-                                    <input type='text' name='input_{$id}.3' id='{$field_id}_2' class='ginput_routing_number' value='{$routing_number}' {$tabindex} {$disabled_text} {$autocomplete} {$html5_output} {$routing_number_placeholder}/>
-                                    <label for='{$field_id}_2' id='{$field_id}_2_label' {$sub_label_class_attribute}>{$routing_number_label}</label>
+			$routing_field = "<span class='ginput_full{$class_suffix}' id='{$field_id}_3_container' >
+                                    <input type='text' name='input_{$id}.3' id='{$field_id}_3' class='ginput_routing_number' value='{$routing_number}' {$tabindex} {$disabled_text} {$autocomplete} {$html5_output} {$routing_number_placeholder}/>
+                                    <label for='{$field_id}_2' id='{$field_id}_3_label' {$sub_label_class_attribute}>{$routing_number_label}</label>
                                  </span>";
+		}
+
+		$tabindex                = $this->get_tabindex();
+		$account_number_field_input = GFFormsModel::get_input( $this, $this->id . '.1' );
+		$html5_output            = ! is_admin() && GFFormsModel::is_html5_enabled() ? "pattern='[0-9]*' title='" . __( 'Only digits are allowed', 'gravity-forms-braintree' ) . "'" : '';
+		$account_number_label    = rgar( $account_number_field_input, 'customLabel' ) != '' ? $account_number_field_input['customLabel'] : __( 'Account Number', 'gravity-forms-braintree' );
+		$account_number_label    = gf_apply_filters( array( 'gform_1', $form_id ), $account_number_label, $form_id );
+
+		$account_number_placeholder = $this->get_input_placeholder_attribute( $account_number_field_input );
+		if ( $is_sub_label_above ) {
+			$account_field = "<span class='ginput_full{$class_suffix}' id='{$field_id}_1_container' >
+									<label for='{$field_id}_1' id='{$field_id}_1_label' {$sub_label_class_attribute}>{$account_number_label}</label>
+									<input type='text' name='input_{$id}.1' id='{$field_id}_1' class='ginput_account_number' value='{$account_number}' {$tabindex} {$disabled_text} {$autocomplete} {$html5_output} {$account_number_placeholder}/>
+								 </span>";
+		} else {
+			$account_field = "<span class='ginput_full{$class_suffix}' id='{$field_id}_1_container' >
+									<input type='text' name='input_{$id}.1' id='{$field_id}_1' class='ginput_account_number' value='{$account_number}' {$tabindex} {$disabled_text} {$autocomplete} {$html5_output} {$account_number_placeholder}/>
+									<label for='{$field_id}_1' id='{$field_id}_1_label' {$sub_label_class_attribute}>{$account_number_label}</label>
+								 </span>";
+		}
+
+		$account_number_verification_field = '';
+		if ( $is_sub_label_above ) {
+			$account_number_verification_field = "<span class='ginput_full{$class_suffix}' id='{$field_id}_1_verification_container' >
+									<label for='{$field_id}_1_verification' id='{$field_id}_1_verification_label' {$sub_label_class_attribute}>{$account_number_label} Verification</label>
+									<input type='text' id='{$field_id}_1_verification' class='ginput_account_number_verification' value='{$account_number}' {$tabindex} {$disabled_text} {$autocomplete} {$html5_output} {$account_number_placeholder}/>
+								 </span>";
+		} else {
+			$account_number_verification_field = "<span class='ginput_full{$class_suffix}' id='{$field_id}_1_verification_container' >
+									<input type='text' id='{$field_id}_1' class='ginput_account_number_verification' value='{$account_number}' {$tabindex} {$disabled_text} {$autocomplete} {$html5_output} {$account_number_placeholder}/>
+									<label for='{$field_id}_1_verification' id='{$field_id}_1_verification_label' {$sub_label_class_attribute}>{$account_number_label} Verification</label>
+								 </span>";
 		}
 
 		$tabindex              = $this->get_tabindex();
@@ -188,7 +207,7 @@ onkeypress='if( event.keyCode == 13 ){ if(window[\"gf_submitting_{$form['id']}\"
                                         </span>";
 		}
 
-		return "<div class='ginput_container ginput_ach_form_container ginput_container_{$this->type} ginput_complex{$class_suffix}' id='{$field_id}'>" . $account_field . $account_type_field . $routing_field . $account_holder_name_field . ' </div>';
+		return "<div class='ginput_container ginput_ach_form_container ginput_container_{$this->type} ginput_complex{$class_suffix}' id='{$field_id}'>" . $account_type_field. $account_holder_name_field . $routing_field . $account_field . $account_number_verification_field  . ' </div>';
 
 	}
 
@@ -437,14 +456,12 @@ onkeypress='if( event.keyCode == 13 ){ if(window[\"gf_submitting_{$form['id']}\"
 	 */
 	public function get_value_save_entry( $value, $form, $input_name, $lead_id, $lead ) {
 		list( $input_token, $field_id_token, $input_id ) = rgexplode( '_', $input_name, 3 );
-		/*if ( $input_id == '1' ) {
+		if ( $input_id == '1' || $input_id == '3' ) {
 			$value              = str_replace( ' ', '', $value );
 			$card_number_length = strlen( $value );
 			$value              = substr( $value, - 4, 4 );
 			$value              = str_pad( $value, $card_number_length, 'X', STR_PAD_LEFT );
-		} elseif ( $input_id == '3' ) {
-			$value = rgpost( "input_{$field_id_token}_3" );
-		}*/
+		}
 
 		return $this->sanitize_entry_value( $value, $form['id'] );
 	}

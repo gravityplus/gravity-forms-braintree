@@ -48,6 +48,7 @@ jQuery(document).ready(function ($) {
             }
 
             var account_number = form.find('.ginput_account_number').val();
+            var account_number_verification = form.find('.ginput_account_number_verification').val();
             var account_type = form.find('.ginput_account_type').val();
             var routing_number = form.find('.ginput_routing_number').val();
             var account_holdername = form.find('.ginput_account_holdername').val();
@@ -58,44 +59,52 @@ jQuery(document).ready(function ($) {
             var region = form.find('.ginput_container_address .address_state input[type=text]').val();
             var postalCode = form.find('.ginput_container_address .address_zip input[type=text]').val();
 
+            var address_validation_errors = [];
             if(streetAddress==''){
-                alert('Please enter street address');
-                return;
+                address_validation_errors.push('Please enter a street address.');
             }
 
             if(locality==''){
-                alert('Please enter your city');
-                return;
+                address_validation_errors.push('Please enter your city.');
             }
 
             if(region==''){
-                alert('Please enter your state');
-                return;
+                address_validation_errors.push('Please enter your state.');
             }
 
             if(postalCode==''){
-                alert('Please enter your Zip/Postal Code');
+                address_validation_errors.push('Please enter your postal code.');
+            }
+
+            if(address_validation_errors.length){
+                alert(address_validation_errors.join('\n'));
                 return;
             }
 
-            if(account_number=='' || routing_number=='' || isNaN(account_number) || isNaN(routing_number)){
-                alert('Please enter valid account number and routing number');
-                return;
+            var achform_validation_errors = [];
+            if(routing_number=='' || isNaN(routing_number) || account_number=='' || isNaN(account_number)){
+                achform_validation_errors.push('Please enter a valid routing and account number.')
             }
 
             if(account_type==''){
-                alert('Please select account type.');
-                return;
+                achform_validation_errors.push('Please select your account type.')
             }
 
             if(account_holdername==''){
-                alert('Please enter account holder name.');
-                return;
+                achform_validation_errors.push('Please enter the account holder name.');
+            }else {
+                var account_holder_namebreak = account_holdername.split(' ');
+                if (account_type == 'S' && account_holder_namebreak.length < 2) {
+                    achform_validation_errors.push('Please enter the account holder first and last name.');
+                }
             }
 
-            var account_holder_namebreak = account_holdername.split(' ');
-            if(account_type=='S' && account_holder_namebreak.length<2){
-                alert('Please enter account holder first name and last name.');
+            if(account_number !== account_number_verification){
+                achform_validation_errors.push('Account Number and Account Number Verification field should be same.');
+            }
+
+            if(achform_validation_errors.length){
+                alert(achform_validation_errors.join('\n'));
                 return;
             }
 
@@ -116,7 +125,7 @@ jQuery(document).ready(function ($) {
                     paypal: true
                 }, function (err, dataCollectorInstance) {
                     if (err) {
-                        alert('We are unable to validate your computer request, please try again.');
+                        alert('We are unable to validate your system, please try again.');
                         resetButtonLoading(submitbtn, curlabel);
                         console.error('dataCollectorError',err);
                         return;
@@ -128,7 +137,7 @@ jQuery(document).ready(function ($) {
                         client: clientInstance
                     }, function (usBankAccountErr, usBankAccountInstance) {
                         if (usBankAccountErr) {
-                            alert('There was an error in initating bank request, Please try again.');
+                            alert('There was an error initiating the bank request. Please try again.');
                             resetButtonLoading(submitbtn, curlabel);
                             console.error('usBankAccountErr',usBankAccountErr);
                             return;
@@ -162,9 +171,9 @@ jQuery(document).ready(function ($) {
                             if (tokenizeErr) {
                                 var errormsg = tokenizeErr['details']['originalError']['details']['originalError'][0]['message'];
                                 if (errormsg.indexOf("Variable 'zipCode' has an invalid value") != -1)
-                                    alert('Please enter valid zip code.');
+                                    alert('Please enter valid postal code.');
                                 else if (errormsg.indexOf("Variable 'state' has an invalid value") != -1)
-                                    alert('Please enter valid 2 Char State/Region code.');
+                                    alert('Please enter valid state code. (e.g.: CA)');
                                 else
                                     alert(errormsg);
 

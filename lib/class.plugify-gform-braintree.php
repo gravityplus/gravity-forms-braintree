@@ -135,9 +135,9 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 			$settings = $this->get_plugin_settings();
 			$response = getAngelleyeBraintreePaymentFields($form);
 			$braintree_ach_field = $response['braintree_ach'];
-			$account_number = rgpost( 'input_' . $braintree_ach_field->id . '_1' );
+			/*$account_number = rgpost( 'input_' . $braintree_ach_field->id . '_1' );
 			$account_type = rgpost( 'input_' . $braintree_ach_field->id . '_2' );
-			$routing_number = rgpost( 'input_' . $braintree_ach_field->id . '_3' );
+			$routing_number = rgpost( 'input_' . $braintree_ach_field->id . '_3' );*/
 			$account_holder_name = rgpost( 'input_' . $braintree_ach_field->id . '_4' );
 
 			$account_holder_name = explode(' ', $account_holder_name);

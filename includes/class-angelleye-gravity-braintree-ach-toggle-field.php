@@ -126,13 +126,52 @@ class Angelleye_Gravity_Braintree_ACH_Toggle_Field extends GF_Field {
 		return $value;
 	}
 
+	/**
+	 * Format the value on entry detail page
+	 * @param array|string $value
+	 * @param string $currency
+	 * @param bool $use_text
+	 * @param string $format
+	 * @param string $media
+	 *
+	 * @return string
+	 */
 	public function get_value_entry_detail( $value, $currency = '', $use_text = false, $format = 'html', $media = 'screen' ) {
-
 		if ( is_array( $value ) ) {
 			$selected_method = trim( rgget( $this->id . '.1', $value ) );
-			return$selected_method=='braintree_ach' ? 'Braintree ACH Direct Debit' : 'Credit Card';
+			return $selected_method=='braintree_ach' ? 'Braintree ACH Direct Debit' : 'Credit Card';
 		} else {
 			return '';
 		}
+	}
+
+	/**
+	 * Format the entry value for display on the entries list page.
+	 *
+	 * Return a value that's safe to display on the page.
+	 *
+	 * @param string|array $value    The field value.
+	 * @param array        $entry    The Entry Object currently being processed.
+	 * @param string       $field_id The field or input ID currently being processed.
+	 * @param array        $columns  The properties for the columns being displayed on the entry list page.
+	 * @param array        $form     The Form Object currently being processed.
+	 *
+	 * @return string
+	 */
+	public function get_value_entry_list( $value, $entry, $field_id, $columns, $form ) {
+
+		$allowable_tags = $this->get_allowable_tags( $form['id'] );
+
+		list( $input_id, $field_id ) = rgexplode( '.', $field_id, 2 );
+		switch($field_id){
+			case 1:
+				if($value=='braintree_ach')
+					$return = 'Braintree ACH Direct Debit';
+				else if($value=='creditcard')
+						$return = 'Credit Card';
+				break;
+		}
+
+		return $return;
 	}
 }
