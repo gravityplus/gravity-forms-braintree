@@ -42,7 +42,7 @@ class AngelleyeGravityBraintreeFieldMapping
         $get_form = GFAPI::get_form($id);
         if(isset($get_form['fields'])) {
             foreach ($get_form['fields'] as $single_field) {
-                if ($single_field->type == 'creditcard') {
+                if ($single_field->type == 'creditcard' || $single_field->type=='braintree_ach') {
                     return true;
                 }
             }
