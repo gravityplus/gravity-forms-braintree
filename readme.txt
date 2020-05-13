@@ -2,11 +2,11 @@
 Contributors: angelleye, Plugify, hello@lukerollans.me, gravityplus
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9CQZZGGMF78VY&source=url
 Tags: gravity form, gravity forms, credit card, credit cards, payment, payments, braintree
-Requires at least: 3.8
-Tested up to: 5.3.2
-Stable tag: 3.0.2
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Requires at least: 5.0
+Tested up to: 5.4
+Stable tag: 3.1.0
+License: GPLv3
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 Allow your customers to purchase goods and services through Gravity Forms via Braintree Payments
 
@@ -63,6 +63,10 @@ In the search field type Gravity Forms Braintree Payments and click Search Plugi
 4. List of active feeds on the current form.
 
 == Changelog ==
+
+= 3.1.0 - 05.13.2020 =
+* Feature - Added Braintree ACH Direct Debit Payment Gateway ([GFB-17](https://github.com/angelleye/gravity-forms-braintree/pull/25))
+* Feature - Added custom plugin requirement checker to validate server configuration ([GFB-22](https://github.com/angelleye/gravity-forms-braintree/pull/24))
 
 = 3.0.2 - 05.04.2020 =
 * Fix - Resolved the issue with PHP Version comparison ([GFB-21](https://github.com/angelleye/gravity-forms-braintree/pull/23))
