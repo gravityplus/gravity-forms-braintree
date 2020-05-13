@@ -81,28 +81,26 @@ function getAngelleyeBraintreePaymentMethod($form){
  * This is to setup default values for Custom Toggle and ACH form fields in admin panel
  */
 
-add_action( 'gform_loaded', function (){
-	add_action( 'gform_editor_js_set_default_values', 'gravityFormSetDefaultValueOnDropin' );
-	function gravityFormSetDefaultValueOnDropin() {
-		?>
-		case "braintree_ach" :
-            if (!field.label)
-            field.label = <?php echo json_encode( esc_html__( 'Pay through your Bank Account', 'gravity-forms-braintree' ) ); ?>;
-            var accNumber, accType, routingNumber, accName;
+add_action( 'gform_editor_js_set_default_values', 'gravityFormSetDefaultValueOnDropin' );
+function gravityFormSetDefaultValueOnDropin() {
+    ?>
+    case "braintree_ach" :
+        if (!field.label)
+        field.label = <?php echo json_encode( esc_html__( 'Pay through your Bank Account', 'gravity-forms-braintree' ) ); ?>;
+        var accNumber, accType, routingNumber, accName;
 
-            accNumber = new Input(field.id + ".1", <?php echo json_encode( gf_apply_filters( array( 'gform_account_number', rgget( 'id' ) ), esc_html__( 'Account Number', 'gravity-forms-braintree' ), rgget( 'id' ) ) ); ?>);
-            accType = new Input(field.id + ".2", <?php echo json_encode( gf_apply_filters( array( 'gform_account_type', rgget( 'id' ) ), esc_html__( 'Account Type', 'gravity-forms-braintree' ), rgget( 'id' ) ) ); ?>);
-            routingNumber = new Input(field.id + ".3", <?php echo json_encode( gf_apply_filters( array( 'gform_routing_number', rgget( 'id' ) ), esc_html__( 'Routing Number', 'gravity-forms-braintree' ), rgget( 'id' ) ) ); ?>);
-            accName = new Input(field.id + ".4", <?php echo json_encode( gf_apply_filters( array( 'gform_account_name', rgget( 'id' ) ), esc_html__( 'Account Holder Name', 'gravity-forms-braintree' ), rgget( 'id' ) ) ); ?>);
-            field.inputs = [accNumber, accType, routingNumber, accName];
-		    break;
-		case "braintree_ach_cc_toggle":
-            if (!field.label)
-            field.label = <?php echo json_encode( esc_html__( 'Select a Payment Method', 'gravity-forms-braintree' ) ); ?>;
-            var paymentMethodToggle;
-            paymentMethodToggle = new Input(field.id + ".1", <?php echo json_encode( gf_apply_filters( array( 'gform_payment_method_selected', rgget( 'id' ) ), esc_html__( 'Payment Method Toggle', 'gravity-forms-braintree' ), rgget( 'id' ) ) ); ?>);
-            field.inputs = [paymentMethodToggle];
-		    break;
-		<?php
-	}
-} );
+        accNumber = new Input(field.id + ".1", <?php echo json_encode( gf_apply_filters( array( 'gform_account_number', rgget( 'id' ) ), esc_html__( 'Account Number', 'gravity-forms-braintree' ), rgget( 'id' ) ) ); ?>);
+        accType = new Input(field.id + ".2", <?php echo json_encode( gf_apply_filters( array( 'gform_account_type', rgget( 'id' ) ), esc_html__( 'Account Type', 'gravity-forms-braintree' ), rgget( 'id' ) ) ); ?>);
+        routingNumber = new Input(field.id + ".3", <?php echo json_encode( gf_apply_filters( array( 'gform_routing_number', rgget( 'id' ) ), esc_html__( 'Routing Number', 'gravity-forms-braintree' ), rgget( 'id' ) ) ); ?>);
+        accName = new Input(field.id + ".4", <?php echo json_encode( gf_apply_filters( array( 'gform_account_name', rgget( 'id' ) ), esc_html__( 'Account Holder Name', 'gravity-forms-braintree' ), rgget( 'id' ) ) ); ?>);
+        field.inputs = [accNumber, accType, routingNumber, accName];
+        break;
+    case "braintree_ach_cc_toggle":
+        if (!field.label)
+        field.label = <?php echo json_encode( esc_html__( 'Select a Payment Method', 'gravity-forms-braintree' ) ); ?>;
+        var paymentMethodToggle;
+        paymentMethodToggle = new Input(field.id + ".1", <?php echo json_encode( gf_apply_filters( array( 'gform_payment_method_selected', rgget( 'id' ) ), esc_html__( 'Payment Method Toggle', 'gravity-forms-braintree' ), rgget( 'id' ) ) ); ?>);
+        field.inputs = [paymentMethodToggle];
+        break;
+    <?php
+}

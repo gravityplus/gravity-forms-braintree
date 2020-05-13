@@ -436,8 +436,10 @@ onkeypress='if( event.keyCode == 13 ){ if(window[\"gf_submitting_{$form['id']}\"
 			$account_type = trim( rgget( $this->id . '.2', $value ) );
 			$routing_number = trim( rgget( $this->id . '.3', $value ) );
 			$account_holder_name   = trim( rgget( $this->id . '.4', $value ) );
+			if($account_number=='')
+				return 'N/A';
 			if($format=='html')
-			return "<b>Account Number: </b> $account_number <br/>
+				return "<b>Account Number: </b> $account_number <br/>
 <b>Account Type: </b> ".($account_type=='s'?'Savings':'Checking')." <br/>
 <b>Routing Number: </b> $routing_number <br/>
 <b>Account Holder: </b> $account_holder_name <br/>";
