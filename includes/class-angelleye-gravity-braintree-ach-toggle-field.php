@@ -21,7 +21,7 @@ class Angelleye_Gravity_Braintree_ACH_Toggle_Field extends GF_Field {
 	 * @return array
 	 */
 	public function get_form_editor_button() {
-		return [ 'group' => 'pricing_fields', 'text'  => 'Method Toggle' ];
+		return [ 'group' => 'pricing_fields', 'text'  => 'Payment Types' ];
 	}
 
 	/**
