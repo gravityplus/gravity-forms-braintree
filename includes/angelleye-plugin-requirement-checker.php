@@ -71,21 +71,27 @@ if(!class_exists('Angelleye_Plugin_Requirement_Checker')){
 				require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 				$all_plugins = get_plugins();
 				$active_plugins = get_option('active_plugins');
+				$install_needed_plugins = [];
 				foreach ($this->required_plugins as $single_plugin => $plugin_options){
 					if(in_array($single_plugin, $active_plugins)){
-						if(isset($plugin_options['ver'])) {
-							$min_version_required = $plugin_options['ver'];
+						if(isset($plugin_options['min_version'])) {
+							$min_version_required = $plugin_options['min_version'];
 							if ( version_compare( $all_plugins[ $single_plugin ]['Version'], $min_version_required, '<' ) ) {
-								$this->errors_list[] = 'You have <b>' . $all_plugins[ $single_plugin ]['Name'] . ' -  Version: ' . $all_plugins[ $single_plugin ]['Version'] . '</b> active, we require min <b>' . $all_plugins[ $single_plugin ]['Name'] . ' - Version: ' . $min_version_required . '</b> to run the ' . $this->plugin_name;
+								$this->errors_list[] = 'You have <b>' . $all_plugins[ $single_plugin ]['Name'] . ' -  Version: ' . $all_plugins[ $single_plugin ]['Version'] . '</b> installed, '.$this->plugin_name.' requires min <b>' . $all_plugins[ $single_plugin ]['Name'] . ' - Version: ' . $min_version_required . '</b> to function properly';
 							}
 						}
-					}else if(isset($all_plugins[$single_plugin])) {
-						$this->errors_list[] = 'Please activate <a href="'.$this->pluginActionLink($single_plugin).'"><b>'.$all_plugins[$single_plugin]['Name'].'</b></a> plugin to run the '.$this->plugin_name;
+					} else if(isset($all_plugins[$single_plugin])) {
+						$this->errors_list[] = 'Please <a href="'.$this->pluginActionLink($single_plugin).'"><b> activate the '.$all_plugins[$single_plugin]['Name'].'</b></a> plugin to run the '.$this->plugin_name;
 					} else{
 						if(isset($plugin_options['install_link']))
-							$this->errors_list[] = 'Please install <a target="_blank" href="'.$plugin_options['install_link'].'"><b>'.$all_plugins[$single_plugin]['Name'].'</b></a> plugin.';
+							$install_needed_plugins[] = '<a target="_blank" href="'.$plugin_options['install_link'].'">'.$plugin_options['name'].'</a>';
 						else
-							$this->errors_list[] = 'Please install <b>'.$all_plugins[$single_plugin]['Name'].'</b> plugin.';
+							$install_needed_plugins[] = $plugin_options['name'];
+					}
+				}
+				if(count($install_needed_plugins)){
+					foreach ( $install_needed_plugins as $install_needed_plugin ) {
+						$this->errors_list[] = sprintf(__('Please install %s to continue.'), $install_needed_plugin);
 					}
 				}
 			}
@@ -112,14 +118,14 @@ if(!class_exists('Angelleye_Plugin_Requirement_Checker')){
 			}
 		}
 
-		public function showAdminNotice(  ) {
+		public function showAdminNotice() {
 
 			echo '<div class="notice notice-error" id=" is-dismissible">
              <p><b>'.(in_array($this->base_plugin_file, $this->deactivate_plugins)?
-					$this->plugin_name.' plugin has been deactivated due to following errors.':
-					$this->plugin_name.' plugin is inactive due to following errors.').'</b></p>
+					'The '.$this->plugin_name.' plugin will not function due to the following:':
+					$this->plugin_name.' plugin is deactivated due to following errors.').'</b></p>
              <p>'.implode('<br/>', $this->errors_list).'</p>
-         </div>';
+         	</div>';
 			if(count($this->deactivate_plugins)){
 				require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 				foreach ($this->deactivate_plugins as $single_plugin_basename){
@@ -133,6 +139,11 @@ if(!class_exists('Angelleye_Plugin_Requirement_Checker')){
 			}
 		}
 
+		/**
+		 * Run custom action when another plugin is deactivated - Deprecated
+		 * @param $new_value
+		 * @param $old_value
+		 */
 		public function checkPluginDeactivation( $new_value, $old_value ) {
 			if($this->check(true)!== true){
 				require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
@@ -148,7 +159,7 @@ if(!class_exists('Angelleye_Plugin_Requirement_Checker')){
 		 * @return string $url action url
 		 */
 		function pluginActionLink( $plugin, $action = 'activate' ) {
-			if ( strpos( $plugin, '/' ) ) {
+			if ( strpos( $plugin, '/' )  ) {
 				$plugin = str_replace( '\/', '%2F', $plugin );
 			}
 			$url = sprintf( admin_url( 'plugins.php?action=' . $action . '&plugin=%s&plugin_status=all&paged=1&s' ), $plugin );

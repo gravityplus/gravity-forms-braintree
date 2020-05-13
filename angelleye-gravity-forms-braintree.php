@@ -62,9 +62,9 @@ class AngelleyeGravityFormsBraintree{
 	public function requirementCheck() {
 		$checker = new Angelleye_Plugin_Requirement_Checker('Gravity Forms Braintree Payments', self::$version, self::$plugin_base_file);
 		$checker->setPHP('7.2');
-		$checker->setRequiredClasses(['GFForms' => 'Gravity forms plugin is required to run the Gravity Forms Braintree.']);
+		$checker->setRequiredClasses(['GFForms' => 'The Gravity Forms plugin is required in order to run Gravity Forms Braintree Payments.']);
 		$checker->setRequiredExtensions(['xmlwriter', 'openssl', 'dom', 'hash', 'curl']);
-		$checker->setRequiredPlugins(['gravityforms/gravityforms.php'=>['ver'=>'2.4', 'install_link'=>'https://www.gravityforms.com/pricing/']]);
+		$checker->setRequiredPlugins(['gravityforms/gravityforms.php'=>['min_version'=>'2.4', 'install_link'=>'https://rocketgenius.pxf.io/c/1331556/445235/7938', 'name'=>'Gravity Forms']]);
 		//$checker->setDeactivatePlugins([self::$plugin_base_file]);
 		if($checker->check()===true) {
 			$this->init();
