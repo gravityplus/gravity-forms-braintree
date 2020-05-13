@@ -4,6 +4,7 @@ defined('ABSPATH') or die('Direct access not allowed');
 
 class Angelleye_Gravity_Braintree_ACH_Field extends GF_Field {
 
+	private $selected_payment_method = '';
 	/**
 	 * @var string $type The field type.
 	 */
@@ -260,6 +261,11 @@ onkeypress='if( event.keyCode == 13 ){ if(window[\"gf_submitting_{$form['id']}\"
 	 */
 	function customCCValidation($validation_result){
 		$form = $validation_result['form'];
+		$this->selected_payment_method = getAngelleyeBraintreePaymentMethod($form);
+
+		if($this->selected_payment_method !== 'braintree_ach')
+			return $validation_result;
+
 		$failed_validation = 0;
 		if(isset($form['fields'])) {
 
@@ -300,13 +306,9 @@ onkeypress='if( event.keyCode == 13 ){ if(window[\"gf_submitting_{$form['id']}\"
 	public function validate( $value, $form ) {
 
 		//check if toggle field exist
-		$selected_payment_method = 'braintree_ach';
-		$response = getAngelleyeBraintreePaymentFields($form);
-		if($response['braintree_ach_cc_toggle']!==false){
-			$selected_payment_method = rgpost( 'input_' . $response['braintree_ach_cc_toggle']->id . '_1' );
-		}
+		$this->selected_payment_method = getAngelleyeBraintreePaymentMethod($form);
 
-		if($selected_payment_method!=='braintree_ach') {
+		if($this->selected_payment_method!=='braintree_ach') {
 			return;
 		}
 
@@ -347,10 +349,10 @@ onkeypress='if( event.keyCode == 13 ){ if(window[\"gf_submitting_{$form['id']}\"
 	public function get_value_submission( $field_values, $get_from_post_global_var = true ) {
 
 		if ( $get_from_post_global_var ) {
-			$value[ $this->id . '.1' ] = $this->get_input_value_submission( 'input_' . $this->id . '_1', rgar( $this->inputs[0], 'name' ), $field_values, true );
-			$value[ $this->id . '.2' ] = $this->get_input_value_submission( 'input_' . $this->id . '_2', rgar( $this->inputs[1], 'name' ), $field_values, true );
-			$value[ $this->id . '.3' ] = $this->get_input_value_submission( 'input_' . $this->id . '_3', rgar( $this->inputs[2], 'name' ), $field_values, true );
-			$value[ $this->id . '.4' ] = $this->get_input_value_submission( 'input_' . $this->id . '_4', rgar( $this->inputs[3], 'name' ), $field_values, true );
+			$value[ $this->id . '.1' ] = $this->get_input_value_submission( 'input_' . $this->id . '_1', rgar( @$this->inputs[0], 'name' ), $field_values, true );
+			$value[ $this->id . '.2' ] = $this->get_input_value_submission( 'input_' . $this->id . '_2', rgar( @$this->inputs[1], 'name' ), $field_values, true );
+			$value[ $this->id . '.3' ] = $this->get_input_value_submission( 'input_' . $this->id . '_3', rgar( @$this->inputs[2], 'name' ), $field_values, true );
+			$value[ $this->id . '.4' ] = $this->get_input_value_submission( 'input_' . $this->id . '_4', rgar( @$this->inputs[3], 'name' ), $field_values, true );
 		} else {
 			$value = $this->get_input_value_submission( 'input_' . $this->id, $this->inputName, $field_values, $get_from_post_global_var );
 		}

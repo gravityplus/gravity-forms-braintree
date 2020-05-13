@@ -132,85 +132,90 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 		$gateway = $this->getBraintreeGateway();
 		if( $gateway !== false ) {
-			$settings = $this->get_plugin_settings();
-			$response = getAngelleyeBraintreePaymentFields($form);
-			$braintree_ach_field = $response['braintree_ach'];
-			/*$account_number = rgpost( 'input_' . $braintree_ach_field->id . '_1' );
-			$account_type = rgpost( 'input_' . $braintree_ach_field->id . '_2' );
-			$routing_number = rgpost( 'input_' . $braintree_ach_field->id . '_3' );*/
-			$account_holder_name = rgpost( 'input_' . $braintree_ach_field->id . '_4' );
+			try {
+				$settings            = $this->get_plugin_settings();
+				$response            = getAngelleyeBraintreePaymentFields( $form );
+				$braintree_ach_field = $response['braintree_ach'];
+				/*$account_number = rgpost( 'input_' . $braintree_ach_field->id . '_1' );
+				$account_type = rgpost( 'input_' . $braintree_ach_field->id . '_2' );
+				$routing_number = rgpost( 'input_' . $braintree_ach_field->id . '_3' );*/
+				$account_holder_name = rgpost( 'input_' . $braintree_ach_field->id . '_4' );
 
-			$account_holder_name = explode(' ', $account_holder_name);
-			/**
-			 * Create customer in Braintree
-			 */
-			$customer_request = [
-				'firstName' => @$account_holder_name[0],
-				'lastName'  => end($account_holder_name),
-			];
-			$this->log_debug( "Braintree_ACH_Customer::create REQUEST => " . print_r( $customer_request, 1 ) );
-			$customer_result = $gateway->customer()->create( $customer_request );
-			$this->log_debug( "Braintree_ACH_Customer::create RESPONSE => " . print_r( $customer_result, 1 ) );
-
-			if ( $customer_result->success ) {
-				$payment_method_request = [
-					'customerId'         => $customer_result->customer->id,
-					'paymentMethodNonce' => $ach_token,
-					'options'            => [
-						'usBankAccountVerificationMethod' => Braintree\Result\UsBankAccountVerification::NETWORK_CHECK
-					]
+				$account_holder_name = explode( ' ', $account_holder_name );
+				/**
+				 * Create customer in Braintree
+				 */
+				$customer_request = [
+					'firstName' => @$account_holder_name[0],
+					'lastName'  => end( $account_holder_name ),
 				];
+				$this->log_debug( "Braintree_ACH_Customer::create REQUEST => " . print_r( $customer_request, 1 ) );
+				$customer_result = $gateway->customer()->create( $customer_request );
+				$this->log_debug( "Braintree_ACH_Customer::create RESPONSE => " . print_r( $customer_result, 1 ) );
 
-				$this->log_debug( "Braintree_ACH_PaymentRequest::create REQUEST => " . print_r( $payment_method_request, 1 ) );
-				$payment_method_response = $gateway->paymentMethod()->create( $payment_method_request );
-				$this->log_debug( "Braintree_ACH_PaymentRequest::create RESPONSE => " . print_r( $payment_method_response, 1 ) );
-
-				if(isset($payment_method_response->paymentMethod->token)) {
-
-					$sale_request = [
-						'amount'             => $payment_amount,
-						'paymentMethodToken' => $payment_method_response->paymentMethod->token,
-						'deviceData'         => $ach_device_corelation,
+				if ( $customer_result->success ) {
+					$payment_method_request = [
+						'customerId'         => $customer_result->customer->id,
+						'paymentMethodNonce' => $ach_token,
 						'options'            => [
-							'submitForSettlement' => true
+							'usBankAccountVerificationMethod' => Braintree\Result\UsBankAccountVerification::NETWORK_CHECK
 						]
 					];
 
-					$this->log_debug( "Braintree_ACH_Transaction::sale REQUEST => " . print_r( $sale_request, 1 ) );
-					$sale_response = $gateway->transaction()->sale($sale_request);
-					$this->log_debug( "Braintree_ACH_Transaction::sale RESPONSE => " . print_r( $sale_response, 1 ) );
+					$this->log_debug( "Braintree_ACH_PaymentRequest::create REQUEST => " . print_r( $payment_method_request, 1 ) );
+					$payment_method_response = $gateway->paymentMethod()->create( $payment_method_request );
+					$this->log_debug( "Braintree_ACH_PaymentRequest::create RESPONSE => " . print_r( $payment_method_response, 1 ) );
 
-					if ( $sale_response->success ) {
-						do_action('angelleye_gravity_forms_response_data', $sale_response, $submission_data, '16', (strtolower($settings['environment']) == 'sandbox') ? true : false , false, 'braintree_ach');
-						$authorization['is_authorized'] = true;
-						$authorization['error_message'] = '';
-						$authorization['transaction_id'] = $sale_response->transaction->id;
+					if ( isset( $payment_method_response->paymentMethod->token ) ) {
 
-						$authorization['captured_payment'] = array(
-							'is_success' => true,
-							'transaction_id' => $sale_response->transaction->id,
-							'amount' => $sale_response->transaction->amount,
-							'error_message' => '',
-							'payment_method' => 'Braintree ACH'
-						);
+						$sale_request = [
+							'amount'             => $payment_amount,
+							'paymentMethodToken' => $payment_method_response->paymentMethod->token,
+							'deviceData'         => $ach_device_corelation,
+							'options'            => [
+								'submitForSettlement' => true
+							]
+						];
 
-						$this->log_debug( "Braintree_ACH::SUCCESS");
-					} else {
-						if( isset( $sale_response->transaction->processorResponseText ) ) {
-							$authorization['error_message'] = sprintf( 'Your bank did not authorized the transaction: %s.', $sale_response->transaction->processorResponseText);
-						}else {
-							$authorization['error_message'] = sprintf( 'Your bank declined the transaction, please try again or contact bank.');
+						$this->log_debug( "Braintree_ACH_Transaction::sale REQUEST => " . print_r( $sale_request, 1 ) );
+						$sale_response = $gateway->transaction()->sale( $sale_request );
+						$this->log_debug( "Braintree_ACH_Transaction::sale RESPONSE => " . print_r( $sale_response, 1 ) );
+
+						if ( $sale_response->success ) {
+							do_action( 'angelleye_gravity_forms_response_data', $sale_response, $submission_data, '16', ( strtolower( $settings['environment'] ) == 'sandbox' ) ? true : false, false, 'braintree_ach' );
+							$authorization['is_authorized']  = true;
+							$authorization['error_message']  = '';
+							$authorization['transaction_id'] = $sale_response->transaction->id;
+
+							$authorization['captured_payment'] = array(
+								'is_success'     => true,
+								'transaction_id' => $sale_response->transaction->id,
+								'amount'         => $sale_response->transaction->amount,
+								'error_message'  => '',
+								'payment_method' => 'Braintree ACH'
+							);
+
+							$this->log_debug( "Braintree_ACH::SUCCESS" );
+						} else {
+							if ( isset( $sale_response->transaction->processorResponseText ) ) {
+								$authorization['error_message'] = sprintf( 'Your bank did not authorized the transaction: %s.', $sale_response->transaction->processorResponseText );
+							} else {
+								$authorization['error_message'] = sprintf( 'Your bank declined the transaction, please try again or contact bank.' );
+							}
+							$this->log_debug( "Braintree_ACH::FAILED_ERROR" );
 						}
-						$this->log_debug( "Braintree_ACH::FAILED_ERROR");
+					} else {
+						$authorization['error_message'] = __( 'We are unable to authorize bank account, This may have happened due to expired token, please try again.', 'gravity-forms-braintree' );
 					}
 				} else {
-					$authorization['error_message'] = __('We are unable to authorize bank account, This may have happened due to expired token, please try again.', 'gravity-forms-braintree');
+					$authorization['error_message'] = __( 'Unable to proceed with the transaction due to invalid name.', 'gravity-forms-braintree' );
 				}
-			} else {
-				$authorization['error_message'] = __('Unable to proceed with the transaction due to invalid name.', 'gravity-forms-braintree');
+			}catch (Exception $exception){
+				$this->log_debug( "Braintree_ACH::EXCEPTION: ".$exception->getTraceAsString() );
+				$exception['error_message'] = __('An internal error occurred, Please try later. ERROR: '.$exception->getMessage());
 			}
-
 			return $authorization;
+
 		}
 
 		$this->log_debug( "Braintree_ACH::FAILED");
@@ -283,18 +288,9 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
      */
     public function authorize( $feed, $submission_data, $form, $entry ) {
 
-	    $selected_payment_method = 'braintree_ach';
-	    $response = getAngelleyeBraintreePaymentFields($form);
-	    if($response['braintree_ach_cc_toggle']!==false){
-		    $selected_payment_method = rgpost( 'input_' . $response['braintree_ach_cc_toggle']->id . '_1' );
-	    }else {
-	    	//This means there was no toggle button, Need to identify based on the fields
-		    if($response['creditcard']!==false)
-			    $selected_payment_method = 'creditcard';
-	    }
+	    $this->selected_payment_method = getAngelleyeBraintreePaymentMethod($form);
 
-	    $this->selected_payment_method = $selected_payment_method;
-	    if($selected_payment_method=='braintree_ach'){
+	    if($this->selected_payment_method == 'braintree_ach'){
 	    	return $this->ach_authorize($feed, $submission_data, $form, $entry);
 	    }
 

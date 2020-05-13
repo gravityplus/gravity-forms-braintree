@@ -18,6 +18,65 @@ function getAngelleyeBraintreePaymentFields($form){
 	return $response;
 }
 
+function getAngelleyeBraintreePaymentMethod($form){
+	$selected_method = '';
+    $response = getAngelleyeBraintreePaymentFields($form);
+
+    //This means customer is using our toggle button
+    if($response['braintree_ach_cc_toggle'] !== false){
+	    $selected_method = rgpost( 'input_' . $response['braintree_ach_cc_toggle']->id . '_1' );
+    }else {
+        if($response['creditcard']!==false){
+            if(isset($response['creditcard']['conditionalLogic']) && is_array($response['creditcard']['conditionalLogic']) && count($response['creditcard']['conditionalLogic'])){
+                $conditionalLogic =  $response['creditcard']['conditionalLogic'];
+                if($conditionalLogic['actionType'] == 'show'){
+                    foreach ( $conditionalLogic['rules'] as $rule ) {
+                        if($rule['operator'] == 'is') {
+                            $fieldId = $rule['fieldId'];
+                            $isValue = $rule['value'];
+                            $selected_radio_value = rgpost( 'input_' . $fieldId );
+
+                            if($selected_radio_value == $isValue){
+                                $selected_method = 'creditcard';
+                                break;
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
+        if($selected_method=='' && $response['braintree_ach'] !== false){
+	        if(isset($response['braintree_ach']['conditionalLogic']) && is_array($response['braintree_ach']['conditionalLogic']) && count($response['braintree_ach']['conditionalLogic'])){
+                $conditionalLogic =  $response['braintree_ach']['conditionalLogic'];
+                if($conditionalLogic['actionType'] == 'show'){
+                    foreach ( $conditionalLogic['rules'] as $rule ) {
+                        if($rule['operator'] == 'is') {
+                            $fieldId = $rule['fieldId'];
+                            $isValue = $rule['value'];
+                            $selected_radio_value = rgpost( 'input_' . $fieldId );
+                            if($selected_radio_value == $isValue){
+                                $selected_method = 'braintree_ach';
+                                break;
+                            }
+                        }
+                    }
+                }
+	        }
+        }
+
+        if($selected_method == '' && $response['creditcard']!==false){
+            $selected_method = 'creditcard';
+        }else if($selected_method == '' && $response['braintree_ach']!==false){
+	        $selected_method = 'braintree_ach';
+        }
+
+    }
+    return $selected_method;
+}
+
+
 /**
  * This is to setup default values for Custom Toggle and ACH form fields in admin panel
  */

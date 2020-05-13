@@ -41,7 +41,7 @@ jQuery(document).ready(function ($) {
         var selectedradio = form.find('.gform_payment_method_options input[type=radio]:checked').val();
 
         var check_if_ach_form = form.find('.ginput_ach_form_container');
-        if(check_if_ach_form.length && (typeof selectedradio ==='undefined' || selectedradio === 'braintree_ach')){
+        if(check_if_ach_form.length && (selectedradio === 'braintree_ach' || check_if_ach_form.closest('.gfield').css('display')!=='none')){
             if(form.find('.ginput_container_address').length==0){
                 alert('ACH payment requires billing address fields, so please include Billing Address field in your Gravity form.');
                 return;
