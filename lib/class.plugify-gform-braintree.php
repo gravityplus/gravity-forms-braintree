@@ -176,6 +176,8 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 						]
 					];
 
+					$sale_request = apply_filters('angelleye_braintree_parameter', $sale_request, $submission_data, $form, $entry);
+
 					$this->log_debug( "Braintree_ACH_Transaction::sale REQUEST => " . print_r( $sale_request, 1 ) );
 					$sale_response = $gateway->transaction()->sale($sale_request);
 					$this->log_debug( "Braintree_ACH_Transaction::sale RESPONSE => " . print_r( $sale_response, 1 ) );
