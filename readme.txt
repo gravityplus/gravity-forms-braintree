@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: gravity form, gravity forms, credit card, credit cards, payment, payments, braintree
 Requires at least: 5.0
 Tested up to: 5.4
-Stable tag: 3.1.0
+Stable tag: 3.1.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -63,6 +63,10 @@ In the search field type Gravity Forms Braintree Payments and click Search Plugi
 4. List of active feeds on the current form.
 
 == Changelog ==
+
+= 3.1.1 - 05.14.2020 =
+* Feature - Added Braintree ACH Direct Debit + CC compatibility with custom radio fields and conditions ([GFB-25](https://github.com/angelleye/gravity-forms-braintree/pull/26))
+* Feature - Pass custom field mapping data with ACH Direct Debit payments ([GFB-24](https://github.com/angelleye/gravity-forms-braintree/pull/27))
 
 = 3.1.0 - 05.13.2020 =
 * Feature - Added Braintree ACH Direct Debit Payment Gateway ([GFB-17](https://github.com/angelleye/gravity-forms-braintree/pull/25))
