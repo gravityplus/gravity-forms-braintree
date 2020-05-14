@@ -177,6 +177,8 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 							]
 						];
 
+						$sale_request = apply_filters('angelleye_braintree_parameter', $sale_request, $submission_data, $form, $entry);
+
 						$this->log_debug( "Braintree_ACH_Transaction::sale REQUEST => " . print_r( $sale_request, 1 ) );
 						$sale_response = $gateway->transaction()->sale( $sale_request );
 						$this->log_debug( "Braintree_ACH_Transaction::sale RESPONSE => " . print_r( $sale_response, 1 ) );
@@ -288,9 +290,18 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
      */
     public function authorize( $feed, $submission_data, $form, $entry ) {
 
-	    $this->selected_payment_method = getAngelleyeBraintreePaymentMethod($form);
+	    $selected_payment_method = 'braintree_ach';
+	    $response = getAngelleyeBraintreePaymentFields($form);
+	    if($response['braintree_ach_cc_toggle']!==false){
+		    $selected_payment_method = rgpost( 'input_' . $response['braintree_ach_cc_toggle']->id . '_1' );
+	    }else {
+	    	//This means there was no toggle button, Need to identify based on the fields
+		    if($response['creditcard']!==false)
+			    $selected_payment_method = 'creditcard';
+	    }
 
-	    if($this->selected_payment_method == 'braintree_ach'){
+	    $this->selected_payment_method = $selected_payment_method;
+	    if($selected_payment_method=='braintree_ach'){
 	    	return $this->ach_authorize($feed, $submission_data, $form, $entry);
 	    }
 
