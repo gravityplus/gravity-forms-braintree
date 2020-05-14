@@ -295,7 +295,7 @@ onkeypress='if( event.keyCode == 13 ){ if(window[\"gf_submitting_{$form['id']}\"
 	 */
 	public function __construct( $data = array() ) {
 		parent::__construct($data);
-		add_filter( 'gform_validation', [$this, 'customCCValidation'], 10 );
+		add_filter( 'gform_validation', [$this, 'customCCValidation'], 50 );
 	}
 
 	/**

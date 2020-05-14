@@ -290,18 +290,9 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
      */
     public function authorize( $feed, $submission_data, $form, $entry ) {
 
-	    $selected_payment_method = 'braintree_ach';
-	    $response = getAngelleyeBraintreePaymentFields($form);
-	    if($response['braintree_ach_cc_toggle']!==false){
-		    $selected_payment_method = rgpost( 'input_' . $response['braintree_ach_cc_toggle']->id . '_1' );
-	    }else {
-	    	//This means there was no toggle button, Need to identify based on the fields
-		    if($response['creditcard']!==false)
-			    $selected_payment_method = 'creditcard';
-	    }
+	    $this->selected_payment_method = getAngelleyeBraintreePaymentMethod($form);
 
-	    $this->selected_payment_method = $selected_payment_method;
-	    if($selected_payment_method=='braintree_ach'){
+	    if($this->selected_payment_method=='braintree_ach'){
 	    	return $this->ach_authorize($feed, $submission_data, $form, $entry);
 	    }
 
