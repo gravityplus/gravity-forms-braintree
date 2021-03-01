@@ -65,7 +65,7 @@ In the search field type Gravity Forms Braintree Payments and click Search Plugi
 == Changelog ==
 
 = 4.0 - 03.01.2021 =
-* Feature - Added Braintree Subscription ([GFB-31](https://github.com/angelleye/gravity-forms-braintree/pull/28))
+* Feature - Added Braintree Subscription ([GFB-31](https://github.com/angelleye/gravity-forms-braintree/pull/30))
 
 = 3.1.2 - 05.14.2020 =
 * Fix - Resolved Braintree ACH/CC form validation issuw with multiple Payment Methods  ([GFB-27](https://github.com/angelleye/gravity-forms-braintree/pull/28))
