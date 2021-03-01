@@ -4,7 +4,7 @@
 
 final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
-    protected $_version = '3.1.2';
+    protected $_version = '4.0';
 
     protected $_min_gravityforms_version = '1.8.7.16';
     protected $_slug = 'gravity-forms-braintree';
@@ -13,8 +13,10 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
     protected $_title = 'Braintree';
     protected $_short_title = 'Braintree';
     protected $_requires_credit_card = true;
-    protected $_supports_callbacks = false;
+    protected $_supports_callbacks = true;
     protected $_enable_rg_autoupgrade = true;
+    protected $is_payment_gateway = true;
+    protected $current_feed = true;
 
     protected $selected_payment_method = 'creditcard';
 
@@ -46,7 +48,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	public function has_credit_card_field( $form ) {
 		if(isset($form['fields'])) {
 			foreach ($form['fields'] as $single_field) {
-				if ($single_field->type == 'creditcard' || $single_field->type=='braintree_ach') {
+				if ($single_field->type == 'creditcard' || $single_field->type=='braintree_ach' || $single_field->type=='braintree_credit_card') {
 					return true;
 				}
 			}
@@ -222,7 +224,6 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 		$this->log_debug( "Braintree_ACH::FAILED");
 		return false;
-
 	}
 
 	/**
@@ -267,6 +268,78 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
 	}
 
+	/**
+	 * Braintree credit card Payment authorization
+	 * @param $feed
+	 * @param $submission_data
+	 * @param $form
+	 * @param $entry
+	 *
+	 * @return array|bool
+	 * @throws \Braintree\Exception\Configuration
+	 */
+	public function braintree_cc_authorize( $feed, $submission_data, $form, $entry ) {
+
+		$authorization = array(
+			'is_authorized' => false,
+			'error_message' => apply_filters( 'gform_braintree_credit_card_failure_message', __( 'Your card could not be billed. Please ensure the details you entered are correct and try again.', 'gravity-forms-braintree' ) ),
+			'transaction_id' => '',
+			'captured_payment' => array(
+				'is_success' => false,
+				'error_message' => '',
+				'transaction_id' => '',
+				'amount' => $submission_data['payment_amount']
+			)
+		);
+
+		if(empty($_POST['payment_method_nonce'])) {
+			return $authorization;
+		}
+
+		try {
+
+			$settings = $this->get_plugin_settings();
+			$gateway = $this->getBraintreeGateway();
+
+			$args = array(
+				'amount' => $submission_data['payment_amount'],
+				'paymentMethodNonce' => $_POST['payment_method_nonce']
+			);
+
+			$args = apply_filters('angelleye_braintree_parameter', $args, $submission_data, $form, $entry);
+
+			if( $settings['settlement'] == 'Yes' ) {
+				$args['options']['submitForSettlement'] = 'true';
+			}
+
+			$result = $gateway->transaction()->sale($args);
+
+			if( $result->success ) {
+				do_action('angelleye_gravity_forms_response_data', $result, $submission_data, '16', (strtolower($settings['environment']) == 'sandbox') ? true : false , false, 'braintree');
+				$authorization['is_authorized'] = true;
+				$authorization['error_message'] = '';
+				$authorization['transaction_id'] = $result->transaction->id;
+
+				$authorization['captured_payment'] = array(
+					'is_success' => true,
+					'transaction_id' => $result->transaction->id,
+					'amount' => $result->transaction->amount,
+					'error_message' => '',
+					'payment_method' => 'Credit Card'
+				);
+
+			} else {
+				if( isset( $result->transaction->processorResponseText ) ) {
+					$authorization['error_message'] .= sprintf( '. Your bank said: %s.', $result->transaction->processorResponseText);
+				}
+			}
+
+		} catch( Exception $e ) {
+			// Do nothing with exception object, just fallback to generic failure
+		}
+
+		return $authorization;
+	}
 
     /**
      * After form has been submitted, send CC details to Braintree and ensure the card is going to work
@@ -296,6 +369,9 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 	    	return $this->ach_authorize($feed, $submission_data, $form, $entry);
 	    }
 
+	    if( $this->selected_payment_method == 'braintree_credit_card' ) {
+	    	return $this->braintree_cc_authorize($feed, $submission_data, $form, $entry);
+	    }
 
         // Prepare authorization response payload
         $authorization = array(
@@ -360,15 +436,12 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
                 }
                 else {
-
                     // Append gateway response text to error message if it exists. If it doesn't exist, a more hardcore
                     // failure has occured and it won't do the user any good to see it other than a general error message
                     if( isset( $result->transaction->processorResponseText ) ) {
                         $authorization['error_message'] .= sprintf( '. Your bank said: %s.', $result->transaction->processorResponseText);
                     }
-
                 }
-
             }
             catch( Exception $e ) {
                 // Do nothing with exception object, just fallback to generic failure
@@ -379,8 +452,208 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
         }
 
         return false;
-
     }
+
+	public function process_capture( $authorization, $feed, $submission_data, $form, $entry ) {
+
+		do_action( 'gform_braintree_post_capture', rgar( $authorization, 'is_authorized' ), rgars( $authorization, 'captured_payment/amount' ), $entry, $form, $this->_args_for_deprecated_hooks['config'], $this->_args_for_deprecated_hooks['aim_response'] );
+
+		return parent::process_capture( $authorization, $feed, $submission_data, $form, $entry );
+	}
+
+	/**
+	 * Braintree Override this method to add integration code to the payment processor in order to create a subscription.
+	 *
+	 * This method is executed during the form validation process and allows the form submission process to fail with a
+	 * validation error if there is anything wrong when creating the subscription.
+	 *
+	 * @param array $feed               Current configured payment feed.
+	 * @param array $submission_data    Contains form field data submitted by the user as well as payment information
+	 *                                  (i.e. payment amount, setup fee, line items, etc...).
+	 * @param array $form               Current form array containing all form settings.
+	 * @param array $entry              Current entry array containing entry information (i.e data submitted by users).
+	 *                                  NOTE: the entry hasn't been saved to the database at this point, so this $entry
+	 *                                  object does not have the 'ID' property and is only a memory representation of the entry.
+	 *
+	 * @return array {
+	 *      Return an $subscription array
+	 *     @type bool   $is_success      If the subscription is successful.
+	 *     @type string $error_message   The error message, if applicable.
+	 *     @type string $subscription_id The subscription ID.
+	 *     @type int    $amount          The subscription amount.
+	 *     @type array  $captured_payment {
+	 *         If payment is captured, an additional array is created.
+	 *         @type bool   $is_success     If the payment capture is successful.
+	 *         @type string $error_message  The error message, if any.
+	 *         @type string $transaction_id The transaction ID of the captured payment.
+	 *         @type int    $amount         The amount of the captured payment, if successful.
+	 *    }
+	 *
+	 * To implement an initial/setup fee for gateways that don't support setup fees as part of subscriptions, manually
+	 * capture the funds for the setup fee as a separate transaction and send that payment information in the
+	 * following 'captured_payment' array:
+	 *
+	 *      'captured_payment' => [
+	 *          'name'           => 'Setup Fee',
+	 *          'is_success'     => true|false,
+	 *          'error_message'  => 'error message',
+	 *          'transaction_id' => 'xxx',
+	 *          'amount'         => XX
+	 *      ]
+	 * }
+	 * @throws \Braintree\Exception\Configuration
+	 */
+    public function subscribe( $feed, $submission_data, $form, $entry ) {
+
+	    $authorization = array(
+		    'is_authorized' => false,
+		    'is_success' => false,
+		    'error_message' => apply_filters( 'gform_braintree_credit_card_failure_message', __( 'Your card could not be billed. Please ensure the details you entered are correct and try again.', 'angelleye-gravity-forms-braintree' ) ),
+	    );
+
+	    if(empty($_POST['payment_method_nonce'])) {
+	    	return $authorization;
+	    }
+
+	    $settings = $this->get_plugin_settings();
+	    $gateway = $this->getBraintreeGateway();
+
+	    $args = array(
+		    'amount' => $submission_data['payment_amount'],
+		    'creditCard' => array(
+			    'number' => !empty($submission_data['card_number']) ? str_replace( array( '-', ' ' ), '', $submission_data['card_number'] ) : '',
+			    'expirationDate' => sprintf( '%s/%s', $submission_data['card_expiration_date'][0], $submission_data['card_expiration_date'][1]),
+			    'cardholderName' => $submission_data['card_name'],
+			    'cvv' => $submission_data['card_security_code']
+		    )
+	    );
+
+	    $args = apply_filters('angelleye_braintree_parameter', $args, $submission_data, $form, $entry);
+
+	    $customerArgs = !empty($args['customer']) ? $args['customer'] : array();
+
+	    $customer_id = $this->get_customer_id($customerArgs);
+
+	    $paymentMethod = $gateway->paymentMethod()->create([
+		    'customerId' => $customer_id,
+		    'paymentMethodNonce' => $_POST['payment_method_nonce']
+	    ]);
+
+	    $fee_amount = !empty($submission_data['setup_fee']) ? $submission_data['setup_fee'] : 0;
+	    $setup_fee_result       = true;
+
+	    if ( ! empty( $fee_amount ) && $fee_amount > 0 ) {
+
+		    $feeArgs = array(
+			    'amount' => $fee_amount,
+			    'paymentMethodToken' => $paymentMethod->paymentMethod->token,
+		    );
+
+		    if( $settings['settlement'] == 'Yes' ) {
+			    $feeArgs['options']['submitForSettlement'] = 'true';
+		    }
+
+		    $feeArgs = apply_filters('angelleye_braintree_parameter', $feeArgs, $submission_data, $form, $entry);
+
+		    $feeResult = $gateway->transaction()->sale($feeArgs);
+
+		    if( $feeResult->success ) {
+			    $authorization['captured_payment'] = array(
+				    'is_success' => true,
+				    'transaction_id' => $feeResult->transaction->id,
+				    'amount' => $feeResult->transaction->amount,
+				    'error_message' => '',
+				    'payment_method' => 'Credit Card'
+			    );
+		    } else {
+			    $setup_fee_result = false;
+			    if( isset( $result->transaction->processorResponseText ) ) {
+				    $authorization['error_message'] .= sprintf( '. Your bank said: %s.', $result->transaction->processorResponseText);
+			    }
+		    }
+	    }
+
+	    if( $setup_fee_result ) {
+
+		    try {
+			    $subscriptionArgs = array(
+				    'paymentMethodToken' => $paymentMethod->paymentMethod->token,
+				    'planId' => !empty($feed['meta']['subscriptionPlan']) ? $feed['meta']['subscriptionPlan'] : '',
+				    'price' => $submission_data['payment_amount'],
+			    );
+
+			    if ( $feed['meta']['recurringTimes'] == 0 ) {
+				    $subscriptionArgs['neverExpires'] = true;
+			    } else {
+				    $subscriptionArgs['numberOfBillingCycles'] = $feed['meta']['recurringTimes'];
+			    }
+
+			    if ( !empty($feed['meta']['trial_enabled']) ) {
+				    $subscriptionArgs['trialDuration']     = '';
+				    $subscriptionArgs['trialDurationUnit'] = '';
+				    $subscriptionArgs['trialPeriod']       = true;
+			    } else {
+				    $subscriptionArgs['firstBillingDate'] = '';
+			    }
+
+			    $subscriptionArgs = apply_filters( 'angelleye_gravity_braintree_subscription_args', $subscriptionArgs );
+			    $subscription = $gateway->subscription()->create($subscriptionArgs);
+
+			    if($subscription->success) {
+
+				    $authorization['is_authorized'] = true;
+				    $authorization['is_success'] = true;
+				    $authorization['error_message'] = '';
+				    $authorization['paymentMethodToken'] = $subscription->subscription->paymentMethodToken;
+				    $authorization['subscription_id'] = $subscription->subscription->id;
+				    $authorization['amount'] = $subscription->subscription->price;
+				    $authorization['subscription_trial_amount'] = $subscription->subscription->price;
+				    $authorization['subscription_start_date'] = $subscription->subscription->firstBillingDate->date;
+			    }
+
+		    } catch ( Exception $e ) {
+
+		    }
+	    }
+
+	    return $authorization;
+	}
+
+	/**
+	 * Braintree override this method to add integration code to the payment processor in order to cancel a subscription.
+	 *
+	 * This method is executed when a subscription is canceled from the braintree Payment Gateway.
+	 *
+	 * @param array $entry  Current entry array containing entry information (i.e data submitted by users).
+	 * @param array $feed   Current configured payment feed.
+	 *
+	 * @return bool Returns true if the subscription was cancelled successfully and false otherwise.
+	 *
+	 * @throws \Braintree\Exception\Configuration
+	 */
+	public function cancel( $entry, $feed ) {
+
+		$gateway = $this->getBraintreeGateway();
+
+		$result = $gateway->subscription()->cancel($entry['transaction_id']);
+
+		if($result->success) {
+			return true;
+		}
+
+    	return false;
+	}
+
+	public function is_payment_gateway( $entry_id ) {
+
+		if ( $this->is_payment_gateway ) {
+			return true;
+		}
+
+		$gateway = gform_get_meta( $entry_id, 'payment_gateway' );
+
+		return in_array( $gateway, array( 'Braintree', $this->_slug ) );
+	}
 
     /**
      * Create and display feed settings fields.
@@ -402,17 +675,85 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
         // Remove the subscription option from transaction type dropdown
         $transaction_type = $this->get_field( 'transactionType', $settings );
 
-        foreach( $transaction_type['choices'] as $index => $choice ) {
-            if( $choice['value'] == 'subscription' ) {
-                unset( $transaction_type['choices'][$index] );
-            }
-        }
+        //foreach( $transaction_type['choices'] as $index => $choice ) {
+            //if( $choice['value'] == 'subscription' ) {
+                //unset( $transaction_type['choices'][$index] );
+            //}
+        //}
 
         $settings = $this->replace_field( 'transactionType', $transaction_type, $settings );
+
+	    $settings = parent::remove_field( 'trial', $settings );
+
+	    $createBraintreePlanUrl = $this->merchant_url('plans/new');
+	    $api_settings_field = array(
+		    array(
+			    'name'    => 'braintree_trial',
+			    'label'   => esc_html__( 'Trial', 'angelleye-gravity-forms-braintree' ),
+			    'type'    => 'braintree_trial',
+			    'hidden'  => '',
+			    'tooltip' => ''
+		    ),
+		    array(
+			    'name'     => 'subscriptionPlan',
+			    'label'    => esc_html__( 'Plan', 'angelleye-gravity-forms-braintree' ),
+			    'type'     => 'select',
+			    'choices'  => $this->get_plans(),
+			    'required' => true,
+			    'tooltip'  => sprintf(__('Plugin will fetch and display the subscription plans. Create the %splan%s in your Braintree account.','angelleye-gravity-forms-braintree'),'<a href="'.$createBraintreePlanUrl.'" target="_blank">','</a>'),
+		    ),
+	    );
+
+	    $settings = $this->add_field_after( 'setupFee', $api_settings_field, $settings );
 
         // Return sanitized settings
         return $settings;
 
+    }
+
+    public function merchant_url( $tab = 'plans') {
+
+	    $settings = $this->get_plugin_settings();
+
+	    $braintreeUrl = '#';
+	    if( !empty($settings['merchant-id']) ) {
+		    $environment    = ! empty( $settings['environment'] ) ? strtolower( $settings['environment'] ) : 'sandbox';
+		    $environmentUrl = ( $environment == 'sandbox' ) ? 'sandbox.' : '';
+
+		    $braintree_config = new \Braintree\Configuration( [
+			    'environment' => strtolower( $settings['environment'] ),
+			    'merchantId'  => $settings['merchant-id'],
+			    'publicKey'   => $settings['public-key'],
+			    'privateKey'  => $settings['private-key']
+		    ] );
+
+		    $merchantPath = $braintree_config->merchantPath();
+		    $braintreeUrl = "https://{$environmentUrl}braintreegateway.com{$merchantPath}/{$tab}";
+	    }
+
+	    return $braintreeUrl;
+    }
+
+	/**
+	 * This function is callback for braintree_trial setting field.
+	 *
+	 * @param array $field Settings fields
+	 * @param bool $echo Display or return
+	 *
+	 * @return string $html
+	 *
+	 * @throws \Braintree\Exception\Configuration
+	 */
+    public function settings_braintree_trial( $field, $echo = true ) {
+
+	    $braintreePlans = $this->merchant_url();
+    	$html = sprintf(__( 'Select your product trial form %sBraintree Plans%s', 'angelleye-gravity-forms-braintree' ),'<a href="'.$braintreePlans.'" target="_blank">', '</a>');
+
+    	if ( $echo ) {
+		    echo $html;
+	    }
+
+	    return $html;
     }
 
     /**
@@ -424,7 +765,6 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
     public function plugin_settings_fields () {
 
         return array(
-
             array(
                 'title' => 'Account Settings',
                 'fields' => array(
@@ -433,7 +773,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
                         'tooltip' => 'Your Braintree Merchant ID',
                         'label' => 'Merchant ID',
                         'type' => 'text',
-                        'class' => 'medium'
+                        'class' => 'medium',
                     ),
                     array(
                         'name' => 'public-key',
@@ -552,8 +892,7 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 
         if( $this->settings_are_valid( $settings ) ) {
             return $settings;
-        }
-        else {
+        } else {
             return false;
         }
 
@@ -718,5 +1057,93 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
 		);
 
 		return array_merge( parent::scripts(), $scripts );
+	}
+
+	/**
+	 * Override default billing cycles intervals for subscription plan.
+	 *
+	 * @return array $billing_cycles
+	 */
+	public function supported_billing_intervals() {
+		$billing_cycles = array(
+			'month' => array( 'label' => esc_html__( 'month(s)', 'angelleye-gravity-forms-braintree' ), 'min' => 1, 'max' => 24 )
+		);
+
+		return $billing_cycles;
+	}
+
+	/**
+	 * Get all Braintree plans using Braintree payment Gateway settings.
+	 *
+	 * @return array $plans
+	 *
+	 * @throws \Braintree\Exception\Configuration
+	 */
+	public function get_plans() {
+
+		$gateway = $this->getBraintreeGateway();
+		$plan_lists = $gateway->plan()->all();
+
+		$plans = array( array(
+			'label' => __('Select a plan','angelleye-gravity-forms-braintree'),
+			'value' => '',
+		));
+
+		if( !empty($plan_lists)) {
+			foreach ($plan_lists as $plan ) {
+				$plans[] = array(
+					'label' => $plan->name,
+					'value' => $plan->id,
+				);
+			}
+		}
+
+		return $plans;
+	}
+
+	/**
+	 * Get customer id using customer email address.
+	 *
+	 * If customer email address already exists in braintree customer lists then provide customer id,
+	 * Otherwise create a new customer using customer details and then provide a customer id.
+	 *
+	 * @param array $args
+	 *
+	 * @return int|string $customer_id Customer id.
+	 *
+	 * @throws \Braintree\Exception\Configuration
+	 */
+	public function get_customer_id( $args ) {
+
+		//check if customer detail is empty or not array then return.
+		if(empty($args) || !is_array($args)) {
+			return '';
+		}
+
+		$email = !empty($args['email']) ? $args['email'] : '';
+
+		$gateway = $this->getBraintreeGateway();
+
+		//search customer using email address
+		$collections = $gateway->customer()->search([
+			Braintree\CustomerSearch::email()->is($email)
+		]);
+
+		$customer_id = 0;
+		foreach ($collections as $key => $collection) {
+			if( !empty($collection->id) ) {
+				$customer_id = $collection->id;
+			}
+		}
+
+		//check $customer_id is empty then create a new customer.
+		if(empty($customer_id)) {
+			$customer    = $gateway->customer()->create( $args );
+			if(!empty($customer->customer->id)) {
+				$customer_id = $customer->customer->id;
+			}
+		}
+
+		return  $customer_id;
 	}
 }
