@@ -4,12 +4,13 @@ function getAngelleyeBraintreePaymentFields($form){
 	$response = [
 		'creditcard' => false,
 		'braintree_ach' => false,
-		'braintree_ach_cc_toggle' => false
+		'braintree_ach_cc_toggle' => false,
+		'braintree_credit_card' => false
 	];
 
 	if(isset($form['fields'])) {
 		foreach ($form['fields'] as $single_field) {
-			if ($single_field->type == 'creditcard' || $single_field->type=='braintree_ach' || $single_field->type == 'braintree_ach_cc_toggle') {
+			if ($single_field->type == 'creditcard' || $single_field->type=='braintree_ach' || $single_field->type == 'braintree_ach_cc_toggle' || $single_field->type=='braintree_credit_card') {
 				$response[$single_field->type] = $single_field;
 			}
 		}
@@ -25,7 +26,7 @@ function getAngelleyeBraintreePaymentMethod($form){
     //This means customer is using our toggle button
     if($response['braintree_ach_cc_toggle'] !== false){
 	    $selected_method = rgpost( 'input_' . $response['braintree_ach_cc_toggle']->id . '_1' );
-    }else {
+    } else {
         if($response['creditcard']!==false){
             if(isset($response['creditcard']['conditionalLogic']) && is_array($response['creditcard']['conditionalLogic']) && count($response['creditcard']['conditionalLogic'])){
                 $conditionalLogic =  $response['creditcard']['conditionalLogic'];
@@ -68,11 +69,14 @@ function getAngelleyeBraintreePaymentMethod($form){
 
         if($selected_method == '' && $response['creditcard']!==false){
             $selected_method = 'creditcard';
-        }else if($selected_method == '' && $response['braintree_ach']!==false){
+        } else if($selected_method == '' && $response['braintree_ach']!==false){
 	        $selected_method = 'braintree_ach';
+        } else if($selected_method == '' && $response['braintree_credit_card']!==false){
+	        $selected_method = 'braintree_credit_card';
         }
 
     }
+
     return $selected_method;
 }
 
@@ -101,6 +105,12 @@ function gravityFormSetDefaultValueOnDropin() {
         var paymentMethodToggle;
         paymentMethodToggle = new Input(field.id + ".1", <?php echo json_encode( gf_apply_filters( array( 'gform_payment_method_selected', rgget( 'id' ) ), esc_html__( 'Payment Method Toggle', 'gravity-forms-braintree' ), rgget( 'id' ) ) ); ?>);
         field.inputs = [paymentMethodToggle];
+        break;
+    case "braintree_credit_card":
+        if (!field.label)
+        field.label = <?php echo json_encode( esc_html__( 'Credit Card', 'angelleye-gravity-forms-braintree' ) ); ?>;
+        var braintreeCC = new Input(field.id + ".1", <?php echo json_encode( gf_apply_filters( array( 'gform_payment_method_selected', rgget( 'id' ) ), esc_html__( 'Credit Card', 'angelleye-gravity-forms-braintree' ), rgget( 'id' ) ) ); ?>);
+        field.inputs = [braintreeCC];
         break;
     <?php
 }

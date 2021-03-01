@@ -4,7 +4,7 @@
  * Plugin URI: https://angelleye.com/products/gravity-forms-braintree-payments
  * Description: Allow your customers to purchase goods and services through Gravity Forms via Braintree Payments.
  * Author: Angell EYE
- * Version: 3.1.2
+ * Version: 4.0
  * Author URI: https://angelleye.com
  * Text Domain: angelleye-gravity-forms-braintree
 
@@ -39,7 +39,7 @@ class AngelleyeGravityFormsBraintree{
 
     protected static $instance = null;
     public static $plugin_base_file;
-    public static $version = '3.1.2';
+    public static $version = '4.0';
 
     public static function getInstance()
     {
@@ -57,6 +57,13 @@ class AngelleyeGravityFormsBraintree{
         register_uninstall_hook( __FILE__, array(AngelleyeGravityBraintreeActivator::class,'Uninstall'));
 
         add_action('plugins_loaded', [$this, 'requirementCheck']);
+	    add_action( 'wp_enqueue_scripts', [$this, 'enqueue_scripts']);
+    }
+
+
+    public function enqueue_scripts() {
+	    wp_register_script('braintreegateway-dropin', "https://js.braintreegateway.com/web/dropin/1.26.0/js/dropin.min.js");
+	    wp_enqueue_script('braintreegateway-dropin');
     }
 
 	public function requirementCheck() {
@@ -94,6 +101,7 @@ class AngelleyeGravityFormsBraintree{
 	        require_once $path . 'includes/class-angelleye-gravity-braintree-ach-toggle-field.php';
 	        require_once $path . 'lib/angelleye-gravity-forms-payment-logger.php';
             require_once $path . 'includes/angelleye-gravity-braintree-field-mapping.php';
+            require_once $path . 'includes/class-angelleye-gravity-braintree-creditcard.php';
 
             /**
              * Required functions
@@ -111,6 +119,7 @@ class AngelleyeGravityFormsBraintree{
 	         */
 	        GF_Fields::register( new Angelleye_Gravity_Braintree_ACH_Field() );
 	        GF_Fields::register( new Angelleye_Gravity_Braintree_ACH_Toggle_Field() );
+	        GF_Fields::register( new Angelleye_Gravity_Braintree_CreditCard_Field() );
             AngellEYE_GForm_Braintree_Payment_Logger::instance();
 
         }

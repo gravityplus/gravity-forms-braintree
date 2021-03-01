@@ -3,8 +3,8 @@ Contributors: angelleye, Plugify, hello@lukerollans.me, gravityplus
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9CQZZGGMF78VY&source=url
 Tags: gravity form, gravity forms, credit card, credit cards, payment, payments, braintree
 Requires at least: 5.0
-Tested up to: 5.4
-Stable tag: 3.1.2
+Tested up to: 5.6.2
+Stable tag: 4.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -63,6 +63,9 @@ In the search field type Gravity Forms Braintree Payments and click Search Plugi
 4. List of active feeds on the current form.
 
 == Changelog ==
+
+= 4.0 - 03.01.2021 =
+* Feature - Added Braintree Subscription ([GFB-31](https://github.com/angelleye/gravity-forms-braintree/pull/28))
 
 = 3.1.2 - 05.14.2020 =
 * Fix - Resolved Braintree ACH/CC form validation issuw with multiple Payment Methods  ([GFB-27](https://github.com/angelleye/gravity-forms-braintree/pull/28))

@@ -42,7 +42,7 @@ class AngelleyeGravityBraintreeFieldMapping
         $get_form = GFAPI::get_form($id);
         if(isset($get_form['fields'])) {
             foreach ($get_form['fields'] as $single_field) {
-                if ($single_field->type == 'creditcard' || $single_field->type=='braintree_ach') {
+                if ($single_field->type == 'creditcard' || $single_field->type=='braintree_ach' || $single_field->type=='braintree_credit_card' ) {
                     return true;
                 }
             }
@@ -123,7 +123,7 @@ class AngelleyeGravityBraintreeFieldMapping
 
     function addNoticeToCreditCardForm( $field_content, $field,  $value, $lead_id, $form_id ) {
         if(is_admin()) {
-            if ($field->type == 'creditcard') {
+            if ($field->type == 'creditcard' || $field->type == 'braintree_credit_card') {
                 //echo ($field_content); die;
                 $first_label_position = strpos($field_content, '<label');
                 if ($first_label_position !== false) {
