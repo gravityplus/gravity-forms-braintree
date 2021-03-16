@@ -680,6 +680,20 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
                 //unset( $transaction_type['choices'][$index] );
             //}
         //}
+		
+		$transactionType = '';
+		foreach( $settings as $index => $setting ) {
+			if( !empty($setting['dependency']['field']) && $setting['dependency']['field'] == 'transactionType' ) {
+				$transactionType = !empty($setting['dependency']['values'][0]) ? $setting['dependency']['values'][0] :'';
+			}
+		}
+
+		if( (!empty($_POST['_gaddon_setting_transactionType']) && $_POST['_gaddon_setting_transactionType'] == 'subscription') || ( empty($_POST['_gaddon_setting_transactionType']) && !empty($transactionType) && $transactionType == 'subscription') ) {
+			$form_page_link = add_query_arg([
+				'id' => !empty($_REQUEST['id']) ? $_REQUEST['id'] : '',
+			], menu_page_url('gf_edit_forms', false));
+			$transaction_type['description'] = sprintf(__('When building your subscription form, make sure to use the %sBraintree CC%s field instead of the basic Credit Card field.','angelleye-gravity-forms-braintree'), '<a href="'.$form_page_link.'">','</a>');
+		}
 
         $settings = $this->replace_field( 'transactionType', $transaction_type, $settings );
 
