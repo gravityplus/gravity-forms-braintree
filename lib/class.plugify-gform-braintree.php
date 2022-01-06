@@ -879,19 +879,14 @@ final class Plugify_GForm_Braintree extends GFPaymentAddOn {
      * @return void
      */
     public function settings_are_valid ( $settings ) {
-
         if( empty( $settings ) ) {
             return false;
         }
-
-        foreach( $settings as $setting ) {
-            if( '' == $setting ) {
-                return false;
-            }
+        if(!empty($settings['merchant-id']) && !empty($settings['public-key']) && !empty($settings['public-key'])) {
+            return true;
+        } else {
+            return false;
         }
-
-        return true;
-
     }
 
     /**
