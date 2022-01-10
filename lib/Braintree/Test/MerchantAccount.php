@@ -1,12 +1,13 @@
 <?php
+namespace Braintree\Test;
+
 /**
  * Merchant Account constants used for testing purposes
  *
  * @package    Braintree
  * @subpackage Test
- * @copyright  2013 Braintree Payment Solutions
  */
-class Braintree_Test_MerchantAccount
+class MerchantAccount
 {
     public static $approve = "approve_me";
 

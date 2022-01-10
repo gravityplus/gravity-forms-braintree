@@ -1,35 +1,30 @@
 <?php
-/**
- * Braintree Utility methods
- * PHP version 5
- *
- * @copyright  2010 Braintree Payment Solutions
- */
+namespace Braintree;
+
+use DateTime;
+use InvalidArgumentException;
 
 /**
  * Braintree Utility methods
- *
- *
- * @copyright  2010 Braintree Payment Solutions
  */
-class Braintree_Util
+
+class Util
 {
     /**
      * extracts an attribute and returns an array of objects
      *
      * extracts the requested element from an array, and converts the contents
-     * of its child arrays to objects of type Braintree_$attributeName, or returns
+     * of its child arrays to objects of type $attributeName, or returns
      * an array with a single element containing the value of that array element
      *
-     * @param array $attribArray attributes from a search response
+     * @param array  $attribArray   attributes from a search response
      * @param string $attributeName indicates which element of the passed array to extract
-     *
-     * @return array array of Braintree_$attributeName objects, or a single element array
+     * @return array array of $attributeName objects, or a single element array
      */
-    public static function extractAttributeAsArray(& $attribArray, $attributeName)
+    public static function extractAttributeAsArray(&$attribArray, $attributeName)
     {
         if(!isset($attribArray[$attributeName])):
-            return array();
+            return [];
         endif;
 
         // get what should be an array from the passed array
@@ -40,7 +35,7 @@ class Braintree_Util
             // create an object from the data in each element
             $objectArray = array_map($classFactory, $data);
         else:
-            return array($data);
+            return [$data];
         endif;
 
         unset($attribArray[$attributeName]);
@@ -49,84 +44,204 @@ class Braintree_Util
     /**
      * throws an exception based on the type of error
      * @param string $statusCode HTTP status code to throw exception from
-     * @throws Braintree_Exception multiple types depending on the error
-     *
+     * @param null|string $message
+     * @throws Exception multiple types depending on the error
+     * @return void
      */
     public static function throwStatusCodeException($statusCode, $message=null)
     {
         switch($statusCode) {
-         case 401:
-            throw new Braintree_Exception_Authentication();
+        case 401:
+            throw new Exception\Authentication();
             break;
-         case 403:
-             throw new Braintree_Exception_Authorization($message);
+        case 403:
+            throw new Exception\Authorization($message);
             break;
-         case 404:
-             throw new Braintree_Exception_NotFound();
+        case 404:
+            throw new Exception\NotFound();
             break;
-         case 426:
-             throw new Braintree_Exception_UpgradeRequired();
+        case 408;
+            throw new Exception\RequestTimeout();
             break;
-         case 500:
-             throw new Braintree_Exception_ServerError();
+        case 426:
+            throw new Exception\UpgradeRequired();
             break;
-         case 503:
-             throw new Braintree_Exception_DownForMaintenance();
+        case 429:
+            throw new Exception\TooManyRequests();
             break;
-         default:
-            throw new Braintree_Exception_Unexpected('Unexpected HTTP_RESPONSE #'.$statusCode);
+        case 500:
+            throw new Exception\ServerError();
+            break;
+        case 504;
+            throw new Exception\GatewayTimeout();
+            break;
+        default:
+            throw new Exception\Unexpected('Unexpected HTTP_RESPONSE #' . $statusCode);
             break;
         }
     }
 
     /**
-     * removes the Braintree_ header from a classname
+     * throws an exception based on the type of error returned from graphql
+     * @param array $response complete graphql response
+     * @throws Exception multiple types depending on the error
+     * @return void
+     */
+    public static function throwGraphQLResponseException($response)
+    {
+        if(!array_key_exists("errors", $response) || !($errors = $response["errors"])) {
+            return;
+        }
+
+        foreach ($errors as $error) {
+            $message = $error["message"];
+            if ($error["extensions"] == null) {
+                throw new Exception\Unexpected("Unexpected exception:" . $message);
+            }
+
+            $errorClass = $error["extensions"]["errorClass"];
+
+            if ($errorClass == "VALIDATION") {
+                continue;
+            } else if ($errorClass == "AUTHENTICATION") {
+                throw new Exception\Authentication();
+            } else if ($errorClass == "AUTHORIZATION") {
+                throw new Exception\Authorization($message);
+            } else if ($errorClass == "NOT_FOUND") {
+                throw new Exception\NotFound();
+            } else if ($errorClass == "UNSUPPORTED_CLIENT") {
+                throw new Exception\UpgradeRequired();
+            } else if ($errorClass == "RESOURCE_LIMIT") {
+                throw new Exception\TooManyRequests();
+            } else if ($errorClass == "INTERNAL") {
+                throw new Exception\ServerError();
+            } else if ($errorClass == "SERVICE_AVAILABILITY") {
+                throw new Exception\ServiceUnavailable();
+            } else {
+                throw new Exception\Unexpected('Unexpected exception ' . $message);
+            }
+        }
+    }
+
+    /**
      *
-     * @param string $name Braintree_ClassName
-     * @return camelCased classname minus Braintree_ header
+     * @param string $className
+     * @param object $resultObj
+     * @return object returns the passed object if successful
+     * @throws Exception\ValidationsFailed
+     */
+    public static function returnObjectOrThrowException($className, $resultObj)
+    {
+        $resultObjName = self::cleanClassName($className);
+        if ($resultObj->success) {
+            return $resultObj->$resultObjName;
+        } else {
+            throw new Exception\ValidationsFailed();
+        }
+    }
+
+    /**
+     * removes the  header from a classname
+     *
+     * @param string $name ClassName
+     * @return camelCased classname minus  header
      */
     public static function cleanClassName($name)
     {
-        $classNamesToResponseKeys = array(
-            'CreditCard' => 'creditCard',
-            'Customer' => 'customer',
-            'Subscription' => 'subscription',
-            'Transaction' => 'transaction',
-            'CreditCardVerification' => 'verification',
-            'AddOn' => 'addOn',
-            'Discount' => 'discount',
-            'Plan' => 'plan',
-            'Address' => 'address',
-            'SettlementBatchSummary' => 'settlementBatchSummary',
-            'MerchantAccount' => 'merchantAccount'
-        );
+        $classNamesToResponseKeys = [
+            'Braintree\CreditCard' => 'creditCard',
+            'Braintree_CreditCard' => 'creditCard',
+            'Braintree\CreditCardGateway' => 'creditCard',
+            'Braintree_CreditCardGateway' => 'creditCard',
+            'Braintree\Customer' => 'customer',
+            'Braintree_Customer' => 'customer',
+            'Braintree\CustomerGateway' => 'customer',
+            'Braintree_CustomerGateway' => 'customer',
+            'Braintree\Subscription' => 'subscription',
+            'Braintree_Subscription' => 'subscription',
+            'Braintree\SubscriptionGateway' => 'subscription',
+            'Braintree_SubscriptionGateway' => 'subscription',
+            'Braintree\Transaction' => 'transaction',
+            'Braintree_Transaction' => 'transaction',
+            'Braintree\TransactionGateway' => 'transaction',
+            'Braintree_TransactionGateway' => 'transaction',
+            'Braintree\CreditCardVerification' => 'verification',
+            'Braintree_CreditCardVerification' => 'verification',
+            'Braintree\CreditCardVerificationGateway' => 'verification',
+            'Braintree_CreditCardVerificationGateway' => 'verification',
+            'Braintree\AddOn' => 'addOn',
+            'Braintree_AddOn' => 'addOn',
+            'Braintree\AddOnGateway' => 'addOn',
+            'Braintree_AddOnGateway' => 'addOn',
+            'Braintree\Discount' => 'discount',
+            'Braintree_Discount' => 'discount',
+            'Braintree\DiscountGateway' => 'discount',
+            'Braintree_DiscountGateway' => 'discount',
+            'Braintree\Dispute' => 'dispute',
+            'Braintree_Dispute' => 'dispute',
+            'Braintree\Dispute\EvidenceDetails' => 'evidence',
+            'Braintree_Dispute_EvidenceDetails' => 'evidence',
+            'Braintree\DocumentUpload' => 'documentUpload',
+            'Braintree_DocumentUpload' => 'doumentUpload',
+            'Braintree\Plan' => 'plan',
+            'Braintree_Plan' => 'plan',
+            'Braintree\PlanGateway' => 'plan',
+            'Braintree_PlanGateway' => 'plan',
+            'Braintree\Address' => 'address',
+            'Braintree_Address' => 'address',
+            'Braintree\AddressGateway' => 'address',
+            'Braintree_AddressGateway' => 'address',
+            'Braintree\SettlementBatchSummary' => 'settlementBatchSummary',
+            'Braintree_SettlementBatchSummary' => 'settlementBatchSummary',
+            'Braintree\SettlementBatchSummaryGateway' => 'settlementBatchSummary',
+            'Braintree_SettlementBatchSummaryGateway' => 'settlementBatchSummary',
+            'Braintree\Merchant' => 'merchant',
+            'Braintree_Merchant' => 'merchant',
+            'Braintree\MerchantGateway' => 'merchant',
+            'Braintree_MerchantGateway' => 'merchant',
+            'Braintree\MerchantAccount' => 'merchantAccount',
+            'Braintree_MerchantAccount' => 'merchantAccount',
+            'Braintree\MerchantAccountGateway' => 'merchantAccount',
+            'Braintree_MerchantAccountGateway' => 'merchantAccount',
+            'Braintree\OAuthCredentials' => 'credentials',
+            'Braintree_OAuthCredentials' => 'credentials',
+            'Braintree\OAuthResult' => 'result',
+            'Braintree_OAuthResult' => 'result',
+            'Braintree\PayPalAccount' => 'paypalAccount',
+            'Braintree_PayPalAccount' => 'paypalAccount',
+            'Braintree\PayPalAccountGateway' => 'paypalAccount',
+            'Braintree_PayPalAccountGateway' => 'paypalAccount',
+            'Braintree\UsBankAccountVerification' => 'usBankAccountVerification',
+            'Braintree_UsBankAccountVerification' => 'usBankAccountVerification',
+        ];
 
-        $name = str_replace('Braintree_', '', $name);
         return $classNamesToResponseKeys[$name];
     }
 
     /**
      *
      * @param string $name className
-     * @return string Braintree_ClassName
+     * @return string ClassName
      */
     public static function buildClassName($name)
     {
-        $responseKeysToClassNames = array(
-            'creditCard' => 'CreditCard',
-            'customer' => 'Customer',
-            'subscription' => 'Subscription',
-            'transaction' => 'Transaction',
-            'verification' => 'CreditCardVerification',
-            'addOn' => 'AddOn',
-            'discount' => 'Discount',
-            'plan' => 'Plan',
-            'address' => 'Address',
-            'settlementBatchSummary' => 'SettlementBatchSummary',
-            'merchantAccount' => 'MerchantAccount'
-        );
+        $responseKeysToClassNames = [
+            'creditCard' => 'Braintree\CreditCard',
+            'customer' => 'Braintree\Customer',
+            'dispute' => 'Braintree\Dispute',
+            'documentUpload' => 'Braintree\DocumentUpload',
+            'subscription' => 'Braintree\Subscription',
+            'transaction' => 'Braintree\Transaction',
+            'verification' => 'Braintree\CreditCardVerification',
+            'addOn' => 'Braintree\AddOn',
+            'discount' => 'Braintree\Discount',
+            'plan' => 'Braintree\Plan',
+            'address' => 'Braintree\Address',
+            'settlementBatchSummary' => 'Braintree\SettlementBatchSummary',
+            'merchantAccount' => 'Braintree\MerchantAccount',
+        ];
 
-        return 'Braintree_' . $responseKeysToClassNames[$name];
+        return (string) $responseKeysToClassNames[$name];
     }
 
     /**
@@ -134,16 +249,16 @@ class Braintree_Util
      *
      * @access public
      * @param string $string
+     * @param null|string $delimiter
      * @return string modified string
      */
     public static function delimiterToCamelCase($string, $delimiter = '[\-\_]')
     {
-        // php doesn't garbage collect functions created by create_function()
-        // so use a static variable to avoid adding a new function to memory
-        // every time this function is called.
         static $callback = null;
         if ($callback === null) {
-            $callback = create_function('$matches', 'return strtoupper($matches[1]);');
+            $callback = function ($matches) {
+                return strtoupper($matches[1]);
+            };
         }
 
         return preg_replace_callback('/' . $delimiter . '(\w)/', $callback, $string);
@@ -166,20 +281,60 @@ class Braintree_Util
      * find capitals and convert to delimiter + lowercase
      *
      * @access public
-     * @param var $string
-     * @return var modified string
+     * @param string $string
+     * @param null|string $delimiter
+     * @return string modified string
      */
     public static function camelCaseToDelimiter($string, $delimiter = '-')
     {
-        // php doesn't garbage collect functions created by create_function()
-        // so use a static variable to avoid adding a new function to memory
-        // every time this function is called.
-        static $callbacks = array();
-        if (!isset($callbacks[$delimiter])) {
-            $callbacks[$delimiter] = create_function('$matches', "return '$delimiter' . strtolower(\$matches[1]);");
-        }
+        return strtolower(preg_replace('/([A-Z])/', "$delimiter\\1", $string));
+    }
 
-        return preg_replace_callback('/([A-Z])/', $callbacks[$delimiter], $string);
+    public static function delimiterToCamelCaseArray($array, $delimiter = '[\-\_]')
+    {
+        $converted = [];
+        foreach ($array as $key => $value) {
+            if (is_string($key)) {
+                $key = self::delimiterToCamelCase($key, $delimiter);
+            }
+
+            if (is_array($value)) {
+                // Make an exception for custom fields, which must be underscore (can't be
+                // camelCase).
+                if ($key === 'customFields') {
+                    $value = self::delimiterToUnderscoreArray($value);
+                } else {
+                    $value = self::delimiterToCamelCaseArray($value, $delimiter);
+                }
+            }
+            $converted[$key] = $value;
+        }
+        return $converted;
+    }
+
+    public static function camelCaseToDelimiterArray($array, $delimiter = '-')
+    {
+        $converted = [];
+        foreach ($array as $key => $value) {
+            if (is_string($key)) {
+                $key = self::camelCaseToDelimiter($key, $delimiter);
+            }
+            if (is_array($value)) {
+                $value = self::camelCaseToDelimiterArray($value, $delimiter);
+            }
+            $converted[$key] = $value;
+        }
+        return $converted;
+    }
+
+    public static function delimiterToUnderscoreArray($array)
+    {
+        $converted = [];
+        foreach ($array as $key => $value) {
+            $key = self::delimiterToUnderscore($key);
+            $converted[$key] = $value;
+        }
+        return $converted;
     }
 
     /**
@@ -187,24 +342,27 @@ class Braintree_Util
      * @param array $array associative array to implode
      * @param string $separator (optional, defaults to =)
      * @param string $glue (optional, defaults to ', ')
+     * @return bool
      */
     public static function implodeAssociativeArray($array, $separator = '=', $glue = ', ')
     {
         // build a new array with joined keys and values
         $tmpArray = null;
         foreach ($array AS $key => $value) {
-                $tmpArray[] = $key . $separator . $value;
-
+            if ($value instanceof DateTime) {
+                $value = $value->format('r');
+            }
+            $tmpArray[] = $key . $separator . $value;
         }
         // implode and return the new array
         return (is_array($tmpArray)) ? implode($glue, $tmpArray) : false;
     }
 
     public static function attributesToString($attributes) {
-        $printableAttribs = array();
+        $printableAttribs = [];
         foreach ($attributes AS $key => $value) {
             if (is_array($value)) {
-                $pAttrib = Braintree_Util::attributesToString($value);
+                $pAttrib = self::attributesToString($value);
             } else if ($value instanceof DateTime) {
                 $pAttrib = $value->format(DateTime::RFC850);
             } else {
@@ -212,7 +370,7 @@ class Braintree_Util
             }
             $printableAttribs[$key] = sprintf('%s', $pAttrib);
         }
-        return Braintree_Util::implodeAssociativeArray($printableAttribs);
+        return self::implodeAssociativeArray($printableAttribs);
     }
 
     /**
@@ -234,7 +392,7 @@ class Braintree_Util
         if(!empty($invalidKeys)) {
             asort($invalidKeys);
             $sortedList = join(', ', $invalidKeys);
-            throw new InvalidArgumentException('invalid keys: '. $sortedList);
+            throw new InvalidArgumentException('invalid keys: ' . $sortedList);
         }
     }
     /**
@@ -245,7 +403,7 @@ class Braintree_Util
      */
     private static function _flattenArray($keys, $namespace = null)
     {
-        $flattenedArray = array();
+        $flattenedArray = [];
         foreach($keys AS $key) {
             if(is_array($key)) {
                 $theKeys = array_keys($key);
@@ -264,7 +422,7 @@ class Braintree_Util
 
     private static function _flattenUserKeys($keys, $namespace = null)
     {
-       $flattenedArray = array();
+       $flattenedArray = [];
 
        foreach($keys AS $key => $value) {
            $fullKey = empty($namespace) ? $key : $namespace;
