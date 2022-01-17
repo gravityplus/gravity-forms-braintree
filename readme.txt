@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: gravity form, gravity forms, credit card, credit cards, payment, payments, braintree
 Requires at least: 5.0
 Tested up to: 5.8.3
-Stable tag: 4.0.3
+Stable tag: 4.0.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -63,6 +63,9 @@ In the search field type Gravity Forms Braintree Payments and click Search Plugi
 4. List of active feeds on the current form.
 
 == Changelog ==
+
+= 4.0.4 - 01.17.2022 =
+* Fix - Resolved PHP Fatal error. ([GFB-41](https://github.com/angelleye/gravity-forms-braintree/pull/38))
 
 = 4.0.3 - 01.10.2022 =
 * Fix - Resolved PHP Fatal error. ([GFB-37](https://github.com/angelleye/gravity-forms-braintree/pull/37))
