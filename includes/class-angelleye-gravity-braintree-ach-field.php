@@ -70,6 +70,10 @@ class Angelleye_Gravity_Braintree_ACH_Field extends GF_Field {
         $dom = new DOMDocument();
         $dom->loadHTML('<?xml encoding="utf-8" ?>' . $button);
         $input = $dom->getElementsByTagName('input')->item(0);
+        if( empty( $input ) ){
+            $input = $dom->getElementsByTagName('button')->item(0);
+        }
+        
         //$input->removeAttribute('onkeypress');
         //$input->removeAttribute('onclick');
         $classes = $input->getAttribute('class');
