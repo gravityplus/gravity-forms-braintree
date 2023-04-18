@@ -3,7 +3,7 @@ Contributors: angelleye, Plugify, hello@lukerollans.me, gravityplus
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9CQZZGGMF78VY&source=url
 Tags: gravity form, gravity forms, credit card, credit cards, payment, payments, braintree
 Requires at least: 5.0
-Tested up to: 5.9
+Tested up to: 6.2
 Stable tag: 4.0.6
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
